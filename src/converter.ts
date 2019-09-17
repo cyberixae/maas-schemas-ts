@@ -2,66 +2,94 @@ import * as gen from 'io-ts-codegen';
 import schema from 'maas-schemas/schemas/core/components/units.json';
 
 export interface StringSchema {
-  description?: string,
-  type: 'string'
+  description?: string;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  type: 'string';
 }
 
 export interface NumberSchema {
-  description?: string,
-  type: 'number'|'integer'
+  description?: string;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  type: 'number' | 'integer';
 }
 
 export interface BooleanSchema {
-  description?: string,
-  type: 'boolean'
+  description?: string;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  type: 'boolean';
 }
 
 export interface ObjectSchema {
-  description?: string,
-  type: 'object'
-  properties: { [key: string]: JSONSchema }
-  required?: Array<string>
+  description?: string;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  type: 'object';
+  properties: { [key: string]: JSONSchema };
+  required?: Array<string>;
 }
 
-export type JSONSchema = StringSchema | NumberSchema | BooleanSchema | ObjectSchema
+export type JSONSchema = StringSchema | NumberSchema | BooleanSchema | ObjectSchema;
 
 export interface JSONSchemaFile {
-  $id: string,
-  description?: string,
-  definitions: Record<string, JSONSchema>
+  $id: string;
+  description?: string;
+  minLength?: number;
+  maxLength?: number;
+  definitions: Record<string, JSONSchema>;
 }
 
 function getRequiredProperties(schema: ObjectSchema): { [key: string]: true } {
-  const required: { [key: string]: true } = {}
+  const required: { [key: string]: true } = {};
   if (schema.required) {
     schema.required.forEach(function(k) {
-      required[k] = true
-    })
+      // eslint-disable-next-line
+      required[k] = true;
+    });
   }
-  return required
+  return required;
 }
 
 function toInterfaceCombinator(schema: ObjectSchema): gen.InterfaceCombinator {
-  const required = getRequiredProperties(schema)
+  const required = getRequiredProperties(schema);
   return gen.interfaceCombinator(
-    Object.keys(schema.properties).map(key =>
-      gen.property(key, fromSchema(schema.properties[key]), !required.hasOwnProperty(key))
-    )
-  )
+    Object.keys(schema.properties).map((key) =>
+      gen.property(
+        key,
+        // eslint-disable-next-line
+        fromSchema(schema.properties[key]),
+        !required.hasOwnProperty(key),
+      ),
+    ),
+  );
 }
 
 export function fromSchema(schema: JSONSchema): gen.TypeReference {
   switch (schema.type) {
     case 'string':
-      return gen.stringType
+      return gen.stringType;
     case 'number':
-      return gen.numberType
+      return gen.numberType;
     case 'integer':
-      return gen.numberType
+      return gen.numberType;
     case 'boolean':
-      return gen.booleanType
+      return gen.booleanType;
     case 'object':
-      return toInterfaceCombinator(schema)
+      return toInterfaceCombinator(schema);
   }
 }
 
@@ -71,37 +99,84 @@ function capitalize(word: string) {
   return [c.toUpperCase(), ...cs].join(empty);
 }
 
-export function fromFile(schema: JSONSchemaFile): Array<[string|undefined, gen.TypeDeclaration]> {
-  const path = schema.$id;
-  const [file] = path.split('/').reverse();
-  return Object.entries(schema.definitions).map(([k,v]: [string, JSONSchema]) =>
-    [v.description,
-    gen.typeDeclaration(capitalize(k), gen.brandCombinator(fromSchema(v), (x) => x, `${file}#${k}`))]
-  )
-
-
+function checkPattern(x: string, pattern: string): string {
+  return `(${x}.match(/${pattern}/) !== null)`;
 }
-const declarations = fromFile(schema as JSONSchemaFile)
+
+function checkMinLength(x: string, minLength: number): string {
+  return `(${x}.length >= ${minLength})`;
+}
+
+function checkMaxLength(x: string, maxLength: number): string {
+  return `(${x}.length <= ${maxLength})`;
+}
+
+function checkMinimum(x: string, minimum: number): string {
+  return `(${x} >= ${minimum})`;
+}
+
+function checkMaximum(x: string, maximum: number): string {
+  return `(${x} <= ${maximum})`;
+}
+
+function checkInteger(x: string): string {
+  return `(Number.isInteger(${x}))`;
+}
+
+function generateChecks(x: string, schema: JSONSchema): string {
+  const checks = [
+    `${x} === ${x}`,
+    ...(schema.pattern ? [checkPattern(x, schema.pattern)] : []),
+    ...(schema.minLength ? [checkMinLength(x, schema.minLength)] : []),
+    ...(schema.maxLength ? [checkMaxLength(x, schema.maxLength)] : []),
+    ...(schema.minimum ? [checkMinimum(x, schema.minimum)] : []),
+    ...(schema.maximum ? [checkMaximum(x, schema.maximum)] : []),
+    ...(schema.type === 'integer' ? [checkInteger(x)] : []),
+  ];
+  return checks.join(' && ');
+}
+
+export function fromFile(
+  schema: JSONSchemaFile,
+): Array<[string | undefined, gen.TypeDeclaration]> {
+  /*
+  const path = schema.$id;
+  const [noSuffix] = path.split('.json');
+  // eslint-disable-next-line
+  const [file] = noSuffix.split('/').reverse();
+  ${capitalize(file)}
+  */
+  return Object.entries(schema.definitions).map(([k, v]: [string, JSONSchema]) => [
+    v.description,
+    gen.typeDeclaration(
+      capitalize(k),
+      gen.brandCombinator(fromSchema(v), (x) => generateChecks(x, v), `${capitalize(k)}`),
+      true,
+    ),
+  ]);
+}
+const declarations = fromFile(schema as JSONSchemaFile);
 
 console.log('/*');
-console.log('!!! DO NOT EDIT !!!')
-console.log('The file was generated from JSON schema by convert.ts');
-console.log('')
+console.log();
 console.log(schema.description);
-console.log(`export const schemaId = ${schema.$id}`);
+console.log();
+console.log('!!! AUTO GENERATED BY CONVERT.TS REFRAIN FROM MANUAL EDITING !!!');
+console.log();
 console.log('*/');
+console.log();
+console.log("import * as t from 'io-ts';");
 
+console.log();
+console.log(`export const schemaId = '${schema.$id}';`);
+
+//const sorted = gen.sort(declarations)
+// eslint-disable-next-line
 for (const [c, d] of declarations) {
   console.log('');
-  if (typeof(c) !== undefined) {
+  if (typeof c !== 'undefined') {
     console.log(`// ${c}`);
   }
-  console.log(gen.printRuntime(d));
   console.log(gen.printStatic(d));
+  console.log(gen.printRuntime(d));
 }
-/*
-const sorted = gen.sort(declarations)
-
-console.log(sorted.map(d => gen.printRuntime(d)).join('\n'))
-console.log(sorted.map(d => gen.printStatic(d)).join('\n'))
-*/
