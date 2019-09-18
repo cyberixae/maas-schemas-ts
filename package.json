@@ -12,8 +12,8 @@
     "ci": "yarn build",
     "clean": "rm -rf lib",
     "build": "yarn clean && tsc",
-    "convert": "./src/converter.ts",
-    "convert-all": "(cd node_modules/maas-schemas/schemas/; find . -iname '*.json' -exec ../../../src/converter.ts {} ../../../src \\;) && yarn eslint --fix",
+    "convert": "./converter.ts",
+    "convert-all": "(cd node_modules/maas-schemas/schemas/; find . -iname '*.json' -exec ../../../converter.ts {} ../../../src \\;) && yarn eslint --fix",
     "deploy-npm": "yarn ci && yarn publish"
   },
   "repository": {
