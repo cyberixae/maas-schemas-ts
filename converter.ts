@@ -187,13 +187,6 @@ function capitalize(word: string) {
 export function fromFile(
   schema: JSONSchemaFile,
 ): Array<[string | undefined, gen.TypeDeclaration, Array<string>]> {
-  /*
-  const path = schema.$id;
-  const [noSuffix] = path.split('.json');
-  // eslint-disable-next-line
-  const [file] = noSuffix.split('/').reverse();
-  ${capitalize(file)}
-  */
   return Object.entries(schema.definitions).map(([k, v]: [string, JSONRef]) => {
     const ref = v as Ref;
     const scem = v as JSONSchema;
@@ -261,7 +254,6 @@ imps.forEach(log);
 log('');
 log(`export const schemaId = '${schema.$id}';`);
 
-//const sorted = gen.sort(declarations)
 // eslint-disable-next-line
 for (const [c, s, r] of defs) {
   log('');
