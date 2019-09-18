@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env ts-node -T
 
 import * as gen from 'io-ts-codegen';
 import fs from 'fs';
