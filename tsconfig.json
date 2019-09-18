@@ -13,6 +13,8 @@
     "typeRoots": ["./node_modules/@types"],
     "downlevelIteration": true,
     "declaration": true,
+    "rootDir": ".",
+    "baseUrl": ".",
     "outDir": "./lib"
   },
   "include": ["src"],

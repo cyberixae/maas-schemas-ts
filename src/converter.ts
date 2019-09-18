@@ -1,5 +1,11 @@
+#!/usr/bin/env ts-node
+
 import * as gen from 'io-ts-codegen';
-import schema from 'maas-schemas/schemas/core/components/units.json';
+import fs from 'fs';
+
+const [_tsNode, _script, inputFile, outputFile ] = process.argv;
+
+const schema: JSONSchemaFile = JSON.parse(fs.readFileSync(inputFile,'utf-8'));
 
 export interface StringSchema {
   description?: string;
@@ -44,13 +50,15 @@ export interface ObjectSchema {
 }
 
 export type JSONSchema = StringSchema | NumberSchema | BooleanSchema | ObjectSchema;
+export type Ref = { $ref: string, description?: string };
+export type JSONRef = Ref | JSONSchema;
 
 export interface JSONSchemaFile {
   $id: string;
   description?: string;
   minLength?: number;
   maxLength?: number;
-  definitions: Record<string, JSONSchema>;
+  definitions: Record<string, JSONRef>;
 }
 
 function getRequiredProperties(schema: ObjectSchema): { [key: string]: true } {
@@ -146,16 +154,48 @@ export function fromFile(
   const [file] = noSuffix.split('/').reverse();
   ${capitalize(file)}
   */
-  return Object.entries(schema.definitions).map(([k, v]: [string, JSONSchema]) => [
-    v.description,
-    gen.typeDeclaration(
-      capitalize(k),
-      gen.brandCombinator(fromSchema(v), (x) => generateChecks(x, v), `${capitalize(k)}`),
-      true,
-    ),
-  ]);
+  return Object.entries(schema.definitions).map(([k, v]: [string, JSONRef]) => {
+    const ref = v as Ref;
+    const scem = v as JSONSchema
+    if(ref['$ref']) {
+      const URI = ref['$ref'];
+      const [fpath, jpath] = URI.split('.json#');
+  // eslint-disable-next-line
+      const [file] = fpath.split('/').reverse();
+  // eslint-disable-next-line
+      const [name] = jpath.split('/').reverse();
+      const iname = `${capitalize(file)}_`;
+      const omg = `${iname}.${capitalize(name)}`;
+      const [,bobobo] = URI.split('http://maasglobal.com/');
+      const [bobobo2,] = bobobo.split('#');
+      const [bobobo3,] = bobobo2.split('.json');
+      console.log(`import * as ${iname} from 'src/${bobobo3}';`);
+      return [
+        ref.description,
+        gen.typeDeclaration(
+          capitalize(k),
+          gen.customCombinator(
+            omg,
+            omg,
+            [
+              'foo',
+              'bar',
+            ],
+          ),
+          true,
+        ),
+      ];
+    }
+    return [
+      scem.description,
+      gen.typeDeclaration(
+        capitalize(k),
+        gen.brandCombinator(fromSchema(scem), (x) => generateChecks(x, scem), `${capitalize(k)}`),
+        true,
+      ),
+    ];
+  });
 }
-const declarations = fromFile(schema as JSONSchemaFile);
 
 console.log('/*');
 console.log();
@@ -167,6 +207,7 @@ console.log('*/');
 console.log();
 console.log("import * as t from 'io-ts';");
 
+const declarations = fromFile(schema as JSONSchemaFile);
 console.log();
 console.log(`export const schemaId = '${schema.$id}';`);
 
@@ -180,3 +221,4 @@ for (const [c, d] of declarations) {
   console.log(gen.printStatic(d));
   console.log(gen.printRuntime(d));
 }
+

@@ -1,1 +1,1 @@
-ts-node converter.ts > output.ts
+ts-node converter.ts > core/customer.ts
