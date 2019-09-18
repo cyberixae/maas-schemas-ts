@@ -3,9 +3,10 @@
 import * as gen from 'io-ts-codegen';
 import fs from 'fs';
 
-const [_tsNode, _script, inputFile, outputFile ] = process.argv;
+const [_tsNode, _script, inputFile] = process.argv;
 
-const schema: JSONSchemaFile = JSON.parse(fs.readFileSync(inputFile,'utf-8'));
+const schema: JSONSchemaFile = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
+console.error('foom')
 
 export interface StringSchema {
   description?: string;
@@ -214,7 +215,7 @@ console.log(`export const schemaId = '${schema.$id}';`);
 //const sorted = gen.sort(declarations)
 // eslint-disable-next-line
 for (const [c, d] of declarations) {
-  console.log('');
+  console.log();
   if (typeof c !== 'undefined') {
     console.log(`// ${c}`);
   }

@@ -13,5 +13,3 @@ export const schemaId = 'http://maasglobal.com/core/customer.json';
 
 export type IdentityId = Units_.IdentityId
 export const IdentityId = Units_.IdentityId
-[ '/Users/twruottu/.nvm/versions/node/v10.15.3/bin/ts-node',
-  '/Users/twruottu/src/maas-schemas-ts/src/converter.ts' ]
