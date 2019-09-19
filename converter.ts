@@ -3,45 +3,18 @@
 import fs from 'fs';
 import path from 'path';
 import * as gen from 'io-ts-codegen';
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
 const [, , inputFile, outputDir] = process.argv;
 
-console.error(`yarn convert ${path.resolve(inputFile)}`);
+//console.error(`yarn convert ${path.resolve(inputFile)}`);
 
-const schema: JSONSchemaFile = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
+const schema: JSONSchema7File = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
 
-export interface StringSchema {
-  description?: string;
-  pattern?: string;
-  minLength?: number;
-  maxLength?: number;
-  type: 'string';
-}
+export type Ref = { $ref: string };
+export type JSONRef = Ref | JSONSchema7Definition;
 
-export interface NumberSchema {
-  description?: string;
-  minimum?: number;
-  maximum?: number;
-  type: 'number' | 'integer';
-}
-
-export interface BooleanSchema {
-  description?: string;
-  type: 'boolean';
-}
-
-export interface ObjectSchema {
-  description?: string;
-  type: 'object';
-  properties: { [key: string]: JSONSchema };
-  required?: Array<string>;
-}
-
-export type JSONSchema = StringSchema | NumberSchema | BooleanSchema | ObjectSchema;
-export type Ref = { $ref: string; description?: string };
-export type JSONRef = Ref | JSONSchema;
-
-export interface JSONSchemaFile {
+export interface JSONSchema7File {
   $id: string;
   description?: string;
   minLength?: number;
@@ -49,7 +22,7 @@ export interface JSONSchemaFile {
   definitions: Record<string, JSONRef>;
 }
 
-function getRequiredProperties(schema: ObjectSchema): { [key: string]: true } {
+function getRequiredProperties(schema: JSONSchema7): { [key: string]: true } {
   const required: { [key: string]: true } = {};
   if (schema.required) {
     schema.required.forEach(function(k) {
@@ -60,7 +33,7 @@ function getRequiredProperties(schema: ObjectSchema): { [key: string]: true } {
   return required;
 }
 
-function toInterfaceCombinator(schema: ObjectSchema): gen.InterfaceCombinator {
+function toInterfaceCombinator(schema: JSONSchema7): gen.InterfaceCombinator {
   const required = getRequiredProperties(schema);
   return gen.interfaceCombinator(
     Object.keys(schema.properties).map((key) =>
@@ -75,54 +48,34 @@ function toInterfaceCombinator(schema: ObjectSchema): gen.InterfaceCombinator {
 }
 
 function checkPattern(x: string, pattern: string): string {
-  return `(${x}.match(/${pattern}/) !== null)`;
+  return `( typeof x !== 'string' || ${x}.match(/${pattern}/) !== null)`;
 }
 
 function checkMinLength(x: string, minLength: number): string {
-  return `(${x}.length >= ${minLength})`;
+  return `( typeof x !== 'string' || ${x}.length >= ${minLength})`;
 }
 
 function checkMaxLength(x: string, maxLength: number): string {
-  return `(${x}.length <= ${maxLength})`;
+  return `( typeof x !== 'string' || ${x}.length <= ${maxLength})`;
 }
 
 function checkMinimum(x: string, minimum: number): string {
-  return `(${x} >= ${minimum})`;
+  return `( typeof x !== 'number' || ${x} >= ${minimum})`;
 }
 
 function checkMaximum(x: string, maximum: number): string {
-  return `(${x} <= ${maximum})`;
+  return `( typeof x !== 'string' || ${x} <= ${maximum})`;
 }
 
 function checkInteger(x: string): string {
   return `(Number.isInteger(${x}))`;
 }
 
-function stringChecks(x: string, schema: StringSchema): string {
+function generateChecks(x: string, schema: JSONSchema7): string {
   const checks: Array<string> = [
     ...(schema.pattern ? [checkPattern(x, schema.pattern)] : []),
     ...(schema.minLength ? [checkMinLength(x, schema.minLength)] : []),
     ...(schema.maxLength ? [checkMaxLength(x, schema.maxLength)] : []),
-  ];
-  if (checks.length < 1) {
-    return 'true';
-  }
-  return checks.join(' && ');
-}
-
-function numberChecks(x: string, schema: NumberSchema): string {
-  const checks: Array<string> = [
-    ...(schema.minimum ? [checkMinimum(x, schema.minimum)] : []),
-    ...(schema.maximum ? [checkMaximum(x, schema.maximum)] : []),
-  ];
-  if (checks.length < 1) {
-    return 'true';
-  }
-  return checks.join(' && ');
-}
-
-function intChecks(x: string, schema: NumberSchema): string {
-  const checks: Array<string> = [
     ...(schema.minimum ? [checkMinimum(x, schema.minimum)] : []),
     ...(schema.maximum ? [checkMaximum(x, schema.maximum)] : []),
     ...(schema.type === 'integer' ? [checkInteger(x)] : []),
@@ -133,20 +86,14 @@ function intChecks(x: string, schema: NumberSchema): string {
   return checks.join(' && ');
 }
 
-function boolChecks(_x: string, _schema: BooleanSchema): string {
-  const checks: Array<string> = [];
-  if (checks.length < 1) {
-    return 'true';
+export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
+  if (typeof schema === 'boolean') {
+    return gen.literalCombinator(schema);
   }
-  return checks.join(' && ');
-}
-
-export function fromSchema(schema: JSONSchema): gen.TypeReference {
   switch (schema.type) {
     case 'string':
       return gen.stringType;
     case 'number':
-      return gen.numberType;
     case 'integer':
       return gen.numberType;
     case 'boolean':
@@ -156,40 +103,16 @@ export function fromSchema(schema: JSONSchema): gen.TypeReference {
   }
 }
 
-export function branded(name: string, schema: JSONSchema): gen.TypeReference {
-  switch (schema.type) {
-    case 'string':
-      return gen.brandCombinator(
-        fromSchema(schema),
-        (x) => stringChecks(x, schema),
-        name,
-      );
-    case 'number':
-      return gen.brandCombinator(
-        fromSchema(schema),
-        (x) => numberChecks(x, schema),
-        name,
-      );
-    case 'integer':
-      return gen.brandCombinator(fromSchema(schema), (x) => intChecks(x, schema), name);
-    case 'boolean':
-      return gen.brandCombinator(fromSchema(schema), (x) => boolChecks(x, schema), name);
-    case 'object':
-      return fromSchema(schema);
-  }
-}
-
 function capitalize(word: string) {
   const empty: '' = '';
   const [c, ...cs] = word.split(empty);
   return [c.toUpperCase(), ...cs].join(empty);
 }
-export function fromFile(
-  schema: JSONSchemaFile,
-): Array<[string | undefined, gen.TypeDeclaration, Array<string>]> {
-  return Object.entries(schema.definitions).map(([k, v]: [string, JSONRef]) => {
+
+export function fromDefinitions(definitions: JSONSchema7['definitions']): Array<[string | undefined, gen.TypeDeclaration, Array<string>]> {
+  return Object.entries(definitions).map(([k, v]: [string, JSONRef]) => {
     const ref = v as Ref;
-    const scem = v as JSONSchema;
+    const scem = v as JSONSchema7Definition;
     if (ref['$ref']) {
       const URI = ref['$ref'];
       const [fpath, jpath] = URI.split('.json#');
@@ -203,7 +126,7 @@ export function fromFile(
       const [bobobo2] = bobobo.split('#');
       const [bobobo3] = bobobo2.split('.json');
       return [
-        ref.description,
+        undefined,
         gen.typeDeclaration(
           capitalize(k),
           gen.customCombinator(omg, omg, ['foo', 'bar']),
@@ -214,14 +137,21 @@ export function fromFile(
     }
     const name = capitalize(k);
     return [
-      scem.description,
-      gen.typeDeclaration(name, branded(name, scem), true),
+      (typeof scem === 'boolean' ? undefined : scem.description),
+      gen.typeDeclaration(name, gen.brandCombinator(fromSchema(scem), (x) => generateChecks(x, scem), name), true),
       [`import * as t from 'io-ts';`],
     ];
   });
 }
 
-const declarations = fromFile(schema as JSONSchemaFile);
+
+export function fromFile(
+  schema: JSONSchema7File,
+): Array<[string | undefined, gen.TypeDeclaration, Array<string>]> {
+  return fromDefinitions(schema.definitions);
+}
+
+const declarations = fromFile(schema as JSONSchema7File);
 const defs: Array<[string | undefined, string, string]> = declarations.map(([c, d]) => [
   c,
   gen.printStatic(d),
