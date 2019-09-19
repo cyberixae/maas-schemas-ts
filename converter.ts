@@ -9,18 +9,7 @@ const [, , inputFile, outputDir] = process.argv;
 
 //console.error(`yarn convert ${path.resolve(inputFile)}`);
 
-const schema: JSONSchema7File = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
-
-export type Ref = { $ref: string };
-export type JSONRef = Ref | JSONSchema7Definition;
-
-export interface JSONSchema7File {
-  $id: string;
-  description?: string;
-  minLength?: number;
-  maxLength?: number;
-  definitions: Record<string, JSONRef>;
-}
+const schema: JSONSchema7 = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
 
 function getRequiredProperties(schema: JSONSchema7): { [key: string]: true } {
   const required: { [key: string]: true } = {};
@@ -34,13 +23,14 @@ function getRequiredProperties(schema: JSONSchema7): { [key: string]: true } {
 }
 
 function toInterfaceCombinator(schema: JSONSchema7): gen.InterfaceCombinator {
+  const properties = schema.properties || {};
   const required = getRequiredProperties(schema);
   return gen.interfaceCombinator(
-    Object.keys(schema.properties).map((key) =>
+    Object.entries(properties).map(<K extends string, V>([key, value]: [K, V]) =>
       gen.property(
         key,
         // eslint-disable-next-line
-        fromSchema(schema.properties[key]),
+        fromSchema(value),
         !required.hasOwnProperty(key),
       ),
     ),
@@ -86,6 +76,11 @@ function generateChecks(x: string, schema: JSONSchema7): string {
   return checks.join(' && ');
 }
 
+function notImplemented(item: string) {
+  console.error(`${item} not implemented`);
+  process.exit()
+}
+
 export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
   if (typeof schema === 'boolean') {
     return gen.literalCombinator(schema);
@@ -100,7 +95,17 @@ export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
       return gen.booleanType;
     case 'object':
       return toInterfaceCombinator(schema);
+    case 'array':
+      notImplemented('array')
   }
+  if ('enum' in schema) {
+    notImplemented('enum')
+  }
+  if ('$ref' in schema) {
+    notImplemented('ref')
+  }
+  // eslint-disable-next-line
+  throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
 }
 
 function capitalize(word: string) {
@@ -109,49 +114,79 @@ function capitalize(word: string) {
   return [c.toUpperCase(), ...cs].join(empty);
 }
 
-export function fromDefinitions(definitions: JSONSchema7['definitions']): Array<[string | undefined, gen.TypeDeclaration, Array<string>]> {
-  return Object.entries(definitions).map(([k, v]: [string, JSONRef]) => {
-    const ref = v as Ref;
-    const scem = v as JSONSchema7Definition;
-    if (ref['$ref']) {
-      const URI = ref['$ref'];
-      const [fpath, jpath] = URI.split('.json#');
-      // eslint-disable-next-line
-      const [file] = fpath.split('/').reverse();
-      // eslint-disable-next-line
-      const [name] = jpath.split('/').reverse();
-      const iname = `${capitalize(file)}_`;
-      const omg = `${iname}.${capitalize(name)}`;
-      const [, bobobo] = URI.split('http://maasglobal.com/');
-      const [bobobo2] = bobobo.split('#');
-      const [bobobo3] = bobobo2.split('.json');
+function fromRef(ref: string): [gen.TypeReference, Array<string>] {
+  const URI = ref;
+  const [fpath, jpath] = URI.split('.json#');
+  // eslint-disable-next-line
+  const [file] = fpath.split('/').reverse();
+  // eslint-disable-next-line
+  const [name] = jpath.split('/').reverse();
+  const iname = `${capitalize(file)}_`;
+  const omg = `${iname}.${capitalize(name)}`;
+  const [, bobobo] = URI.split('http://maasglobal.com/');
+  const [bobobo2] = bobobo.split('#');
+  const [bobobo3] = bobobo2.split('.json');
+  return [gen.customCombinator(omg, omg, ['foo', 'bar']), [`import * as ${iname} from 'src/${bobobo3}';`]];
+}
+
+export function fromDefinitions(
+  definitions2: JSONSchema7['definitions'],
+): Array<[string | undefined, gen.TypeDeclaration, Array<string>]> {
+  const definitions = definitions2 || {}
+  return Object.entries(definitions).map(([k, v]: [string, JSONSchema7Definition]) => {
+    const scem = v
+    const name = capitalize(k);
+
+    if (typeof scem === 'boolean') {
+      return [
+        undefined,
+        gen.typeDeclaration(
+          name,
+          gen.brandCombinator(fromSchema(scem), (x) => 'true', name),
+          true,
+        ),
+        [`import * as t from 'io-ts';`],
+      ];
+    }
+    if ('$ref' in scem) {
+      if (typeof scem['$ref'] === 'undefined') {
+        // eslint-disable-next-line
+        throw new Error('broken input');
+      }
+      const [comb, imports] = fromRef(scem['$ref'])
       return [
         undefined,
         gen.typeDeclaration(
           capitalize(k),
-          gen.customCombinator(omg, omg, ['foo', 'bar']),
+          comb,
           true,
         ),
-        [`import * as ${iname} from 'src/${bobobo3}';`],
+        imports,
       ];
     }
-    const name = capitalize(k);
     return [
-      (typeof scem === 'boolean' ? undefined : scem.description),
-      gen.typeDeclaration(name, gen.brandCombinator(fromSchema(scem), (x) => generateChecks(x, scem), name), true),
+      scem.description,
+      gen.typeDeclaration(
+        name,
+        gen.brandCombinator(fromSchema(scem), (x) => generateChecks(x, scem), name),
+        true,
+      ),
       [`import * as t from 'io-ts';`],
     ];
   });
 }
 
-
 export function fromFile(
-  schema: JSONSchema7File,
+  schema: JSONSchema7,
 ): Array<[string | undefined, gen.TypeDeclaration, Array<string>]> {
-  return fromDefinitions(schema.definitions);
+  return fromDefinitions(schema.definitions).concat(['Default', gen.typeDeclaration(
+        'Default',
+        gen.brandCombinator(fromSchema(schema), (x) => generateChecks(x, schema), 'Default'),
+        true,
+      ), ["import * as t from 'io-ts';"]]);
 }
 
-const declarations = fromFile(schema as JSONSchema7File);
+const declarations = fromFile(schema as JSONSchema7);
 const defs: Array<[string | undefined, string, string]> = declarations.map(([c, d]) => [
   c,
   gen.printStatic(d),
