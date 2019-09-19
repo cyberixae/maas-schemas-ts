@@ -16,6 +16,7 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/no-empty-interface': 0,
     '@typescript-eslint/no-explicit-any': 0,
+    '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/no-object-literal-type-assertion': [0],
     '@typescript-eslint/no-unused-vars': [1, { argsIgnorePattern: '(^_|x)', ignoreRestSiblings: true }],
     'fp/no-nil': 0,
