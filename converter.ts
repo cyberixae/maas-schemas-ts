@@ -143,7 +143,7 @@ function fromRef(refString: string): gen.TypeReference {
   return gen.customCombinator(variableRef, variableRef);
 }
 
-export function isSupported(feature: string) {
+function isSupported(feature: string) {
   const supported = [
     '$ref',
     '$id',
@@ -161,7 +161,7 @@ export function isSupported(feature: string) {
   return supported.includes(feature);
 }
 
-export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
+function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
   if (typeof schema === 'boolean') {
     imps.add("import * as t from 'io-ts';");
     return gen.literalCombinator(schema);
@@ -203,7 +203,7 @@ export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
   throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
 }
 
-export function fromDefinitions(
+function fromDefinitions(
   definitions2: JSONSchema7['definitions'],
 ): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
   const definitions = definitions2 || {};
@@ -220,7 +220,7 @@ export function fromDefinitions(
         description,
         gen.typeDeclaration(
           name,
-          gen.brandCombinator(fromSchema(scem), (x) => 'true', name),
+          gen.brandCombinator(fromSchema(scem), (_x) => 'true', name),
           true,
         ),
       ];
@@ -251,7 +251,9 @@ export function fromDefinitions(
   });
 }
 
-function fromNonRefRoot(schema: JSONSchema7): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
+function fromNonRefRoot(
+  schema: JSONSchema7,
+): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
   // root schema info is printed in the beginning of the file
   const title = undefined;
   const description = undefined;
@@ -301,7 +303,7 @@ function fromRoot(
   return items;
 }
 
-export function fromFile(
+function fromFile(
   schema: JSONSchema7,
 ): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
   return fromRoot(schema).concat(fromDefinitions(schema.definitions));
