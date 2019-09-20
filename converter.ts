@@ -8,17 +8,18 @@ import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 const [, , inputFile, outputDir] = process.argv;
 const outputFile = path.join(outputDir, inputFile.split('.json').join('.ts'));
 
-console.info('');
-console.info(`input: ${path.resolve(inputFile)}`);
-console.info(`output: ${path.resolve(outputFile)}`);
-
 const schema: JSONSchema7 = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
 
 const imps = new Set<string>();
+let failure: any = false;
 
 function notImplemented(item: string) {
+  console.error(),
   console.error(`ERROR: ${item} NOT supported by convert.ts`);
-  process.exit();
+  console.error(`  in ${path.resolve(inputFile)}`);
+  failure = true;
+  const escalate = "throw new Error('schema conversion failed')";
+  return gen.customCombinator(escalate, escalate);
 }
 
 function capitalize(word: string) {
@@ -130,7 +131,7 @@ function fromRef(refString: string): gen.TypeReference {
   const importName = `${camelFromKebab(basefile)}_`;
   const domain = 'http://maasglobal.com/';
   if (ref.filePath.startsWith(domain) === false) {
-    notImplemented('relative references');
+    return notImplemented('relative references');
   }
   const [, withoutDomain] = ref.filePath.split(domain);
   const [importPath] = withoutDomain.split('.json');
@@ -141,20 +142,31 @@ function fromRef(refString: string): gen.TypeReference {
 
 export function isSupported(feature: string) {
   const supported = [
+    '$ref',
     '$id',
     'title',
+    'description',
+    'definitions',
+    'type',
+    'minimum',
+    'maximum',
+    'minLength',
+    'maxLength',
+    'properties',
+    'required',
   ];
-  if (supported.includes(feature)) {
-    return true;
-  }
-  notImplemented(feature);
+  return supported.includes(feature);
 }
 
 export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
   if (typeof schema === 'boolean') {
     return gen.literalCombinator(schema);
   }
-  Object.keys(schema).forEach(isSupported);
+  for (const key in schema) {
+    if (isSupported(key) !== true) {
+      return notImplemented(key + ' FIELD');
+    }
+  }
   if ('$ref' in schema) {
     if (typeof schema['$ref'] === 'undefined') {
       // eslint-disable-next-line
@@ -172,12 +184,14 @@ export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
       return gen.booleanType;
     case 'object':
       return toInterfaceCombinator(schema);
+    case 'array':
+      return notImplemented('array TYPE');
   }
   if ('enum' in schema) {
-    notImplemented('enum');
+    return notImplemented('enum TYPE');
   }
   if (typeof schema.type !== 'undefined') {
-    notImplemented(`${schema.type} type`);
+    return notImplemented(`${JSON.stringify(schema.type)} TYPE`);
   }
   // eslint-disable-next-line
   throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
@@ -214,7 +228,11 @@ export function fromDefinitions(
         // eslint-disable-next-line
         throw new Error('broken input');
       }
-      return [title, description, gen.typeDeclaration(capitalize(k), fromRef(scem['$ref']), true)];
+      return [
+        title,
+        description,
+        gen.typeDeclaration(capitalize(k), fromRef(scem['$ref']), true),
+      ];
     }
     imps.add("import * as t from 'io-ts';");
     return [
@@ -241,7 +259,9 @@ export function fromRoot(
       // eslint-disable-next-line
       throw new Error('broken input');
     }
-    return [[title, description, gen.typeDeclaration('default', fromRef(root['$ref']), true)]];
+    return [
+      [title, description, gen.typeDeclaration('default', fromRef(root['$ref']), true)],
+    ];
   }
   try {
     imps.add("import * as t from 'io-ts';");
@@ -272,12 +292,18 @@ export function fromFile(
 }
 
 const declarations = fromFile(schema as JSONSchema7);
-const defs: Array<[JSONSchema7['title'], JSONSchema7['description'],  string,  string]> = declarations.map(([t, c, d]) => [
+const defs: Array<
+  [JSONSchema7['title'], JSONSchema7['description'], string, string]
+> = declarations.map(([t, c, d]) => [
   t,
   c,
   gen.printStatic(d),
   gen.printRuntime(d).replace(/\ninterface /, '\nexport interface '),
 ]);
+
+if (failure === true) {
+  process.exit();
+}
 
 fs.mkdirSync(path.dirname(outputFile), { recursive: true });
 const fd = fs.openSync(outputFile, 'w');
@@ -313,4 +339,5 @@ for (const [t, c, s, r] of defs) {
 
 log('// Success');
 fs.closeSync(fd);
-console.info('.');
+
+console.log('DONE');
