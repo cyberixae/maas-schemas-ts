@@ -11,12 +11,15 @@ const outputFile = path.join(outputDir, inputFile.split('.json').join('.ts'));
 const schema: JSONSchema7 = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
 
 const imps = new Set<string>();
+const exps = new Set<string>();
+
+// eslint-disable-next-line
 let failure: any = false;
 
 function notImplemented(item: string) {
-  console.error(),
-  console.error(`ERROR: ${item} NOT supported by convert.ts`);
+  console.error(), console.error(`ERROR: ${item} NOT supported by convert.ts`);
   console.error(`  in ${path.resolve(inputFile)}`);
+  // eslint-disable-next-line
   failure = true;
   const escalate = "throw new Error('schema conversion failed')";
   return gen.customCombinator(escalate, escalate);
@@ -40,7 +43,7 @@ function parseRef(ref: string) {
   const parts = ref.split('#');
   if (parts.length === 1) {
     const [filePath] = parts;
-    return { filePath, variableName: 'default' };
+    return { filePath, variableName: 'Default' };
   }
   if (parts.length > 2) {
     // eslint-disable-next-line
@@ -160,8 +163,10 @@ export function isSupported(feature: string) {
 
 export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
   if (typeof schema === 'boolean') {
+    imps.add("import * as t from 'io-ts';");
     return gen.literalCombinator(schema);
   }
+  // eslint-disable-next-line
   for (const key in schema) {
     if (isSupported(key) !== true) {
       return notImplemented(key + ' FIELD');
@@ -174,6 +179,7 @@ export function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
     }
     return fromRef(schema['$ref']);
   }
+  imps.add("import * as t from 'io-ts';");
   switch (schema.type) {
     case 'string':
       return gen.stringType;
@@ -209,7 +215,6 @@ export function fromDefinitions(
       // booleans do not have meta data
       const title = undefined;
       const description = undefined;
-      imps.add("import * as t from 'io-ts';");
       return [
         title,
         description,
@@ -234,7 +239,6 @@ export function fromDefinitions(
         gen.typeDeclaration(capitalize(k), fromRef(scem['$ref']), true),
       ];
     }
-    imps.add("import * as t from 'io-ts';");
     return [
       scem.title,
       scem.description,
@@ -247,7 +251,32 @@ export function fromDefinitions(
   });
 }
 
-export function fromRoot(
+function fromNonRefRoot(schema: JSONSchema7): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
+  // root schema info is printed in the beginning of the file
+  const title = undefined;
+  const description = undefined;
+  try {
+    return [
+      [
+        title,
+        description,
+        gen.typeDeclaration(
+          'Default',
+          gen.brandCombinator(
+            fromSchema(schema),
+            (x) => generateChecks(x, schema),
+            'Default',
+          ),
+          true,
+        ),
+      ],
+    ];
+  } catch {
+    return [];
+  }
+}
+
+function fromRoot(
   root: JSONSchema7,
 ): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
   // root schema info is printed in the beginning of the file
@@ -259,30 +288,17 @@ export function fromRoot(
       // eslint-disable-next-line
       throw new Error('broken input');
     }
+    exps.add('export default Default;');
     return [
-      [title, description, gen.typeDeclaration('default', fromRef(root['$ref']), true)],
+      [title, description, gen.typeDeclaration('Default', fromRef(root['$ref']), true)],
     ];
   }
-  try {
+  const items = fromNonRefRoot(schema);
+  if (items.length > 0) {
     imps.add("import * as t from 'io-ts';");
-    return [
-      [
-        title,
-        description,
-        gen.typeDeclaration(
-          'default',
-          gen.brandCombinator(
-            fromSchema(schema),
-            (x) => generateChecks(x, schema),
-            'default',
-          ),
-          true,
-        ),
-      ],
-    ];
-  } catch {
-    return [];
+    exps.add('export default Default;');
   }
+  return items;
 }
 
 export function fromFile(
@@ -336,6 +352,8 @@ for (const [t, c, s, r] of defs) {
   log(s);
   log(r);
 }
+
+exps.forEach(log);
 
 log('// Success');
 fs.closeSync(fd);
