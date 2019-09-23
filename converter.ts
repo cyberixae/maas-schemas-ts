@@ -32,6 +32,8 @@ const schema: JSONSchema7 = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
 
 const imps = new Set<string>();
 const exps = new Set<string>();
+const titles: Record<string, string | undefined> = {};
+const descriptions: Record<string, string | undefined> = {};
 
 // eslint-disable-next-line
 let failure: any = false;
@@ -369,8 +371,16 @@ function fromFile(
 }
 
 // eslint-disable-next-line
-const declarations = gen.sort(fromFile(schema as JSONSchema7).map(([_t, _c, d]) => d));
-const defs: Array<[string, string]> = declarations.map((d) => [
+const declarations = gen.sort(fromFile(schema as JSONSchema7).map(([t, c, d]) => {
+    // eslint-disable-next-line
+  titles[d.name] = t;
+    // eslint-disable-next-line
+  descriptions[d.name] = c;
+    return d;
+  }),
+);
+const defs: Array<[string, string, string]> = declarations.map((d) => [
+  d.name,
   gen.printStatic(d),
   gen.printRuntime(d).replace(/\ninterface /, '\nexport interface '),
 ]);
@@ -399,8 +409,9 @@ log('');
 log(`export const schemaId = '${schema.$id}';`);
 
 // eslint-disable-next-line
-for (const [s, r] of defs) {
-  log('');
+for (const [n, s, r] of defs) {
+  log(`// ${titles[n] || n}`);
+  log(`// ${descriptions[n] || 'The purpose of this remains a mystery'}`);
   log(s);
   log(r);
 }
