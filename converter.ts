@@ -184,7 +184,7 @@ function fromRef(refString: string): gen.TypeReference {
   const ref = parseRef(refString);
 
   if (ref.filePath === '') {
-    return gen.customCombinator(ref.variableName, ref.variableName);
+    return gen.customCombinator(ref.variableName, ref.variableName, [ref.variableName]);
   }
 
   // eslint-disable-next-line
@@ -202,7 +202,7 @@ function fromRef(refString: string): gen.TypeReference {
     imps.add(`import * as ${importName} from '${relativePath}';`);
   }
   const variableRef = `${importName}.${ref.variableName}`;
-  return gen.customCombinator(variableRef, variableRef);
+  return gen.customCombinator(variableRef, variableRef, [importName]);
 }
 
 function isSupported(feature: string, isRoot: boolean) {
@@ -296,11 +296,7 @@ function fromDefinitions(
         // eslint-disable-next-line
         throw new Error('broken input');
       }
-      return [
-        title,
-        description,
-        gen.typeDeclaration(capitalize(k), fromRef(scem['$ref']), true),
-      ];
+      return [title, description, gen.typeDeclaration(name, fromRef(scem['$ref']), true)];
     }
     return [
       scem.title,
@@ -372,12 +368,9 @@ function fromFile(
   return fromDefinitions(schema.definitions).concat(fromRoot(schema));
 }
 
-const declarations = fromFile(schema as JSONSchema7);
-const defs: Array<
-  [JSONSchema7['title'], JSONSchema7['description'], string, string]
-> = declarations.map(([t, c, d]) => [
-  t,
-  c,
+// eslint-disable-next-line
+const declarations = gen.sort(fromFile(schema as JSONSchema7).map(([_t, _c, d]) => d));
+const defs: Array<[string, string]> = declarations.map((d) => [
   gen.printStatic(d),
   gen.printRuntime(d).replace(/\ninterface /, '\nexport interface '),
 ]);
@@ -406,14 +399,8 @@ log('');
 log(`export const schemaId = '${schema.$id}';`);
 
 // eslint-disable-next-line
-for (const [t, c, s, r] of defs) {
+for (const [s, r] of defs) {
   log('');
-  if (typeof t !== 'undefined') {
-    log(`// ${t}`);
-  }
-  if (typeof c !== 'undefined') {
-    log(`// ${c}`);
-  }
   log(s);
   log(r);
 }
