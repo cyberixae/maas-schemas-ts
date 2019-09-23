@@ -49,8 +49,8 @@ function notImplemented(pre: string, item: string, post: string) {
         .join(' '),
     );
   console.error(`  in ${path.resolve(inputFile)}`);
-  // eslint-disable-next-line
   if (level === ERROR) {
+    // eslint-disable-next-line
     failure = true;
     const escalate = "throw new Error('schema conversion failed')";
     return gen.customCombinator(escalate, escalate);
