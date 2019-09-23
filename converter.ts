@@ -146,11 +146,14 @@ function fromRef(refString: string): gen.TypeReference {
   const importName = `${camelFromKebab(basefile)}_`;
   const domain = 'http://maasglobal.com/';
   if (ref.filePath.startsWith(domain) === false) {
-    return notImplemented('relative references');
+    const URI = ref.filePath;
+    const [, withoutDomain] = ref.filePath.split(domain);
+    const [fullPath] = withoutDomain.split('.json');
+    imps.add(`import * as ${importName} from 'src/${fullPath}';`);
+  } else {
+    const relativePath = ref.filePath;
+    imps.add(`import * as ${importName} from '${relativePath}';`);
   }
-  const [, withoutDomain] = ref.filePath.split(domain);
-  const [importPath] = withoutDomain.split('.json');
-  imps.add(`import * as ${importName} from 'src/${importPath}';`);
   const variableRef = `${importName}.${ref.variableName}`;
   return gen.customCombinator(variableRef, variableRef);
 }
