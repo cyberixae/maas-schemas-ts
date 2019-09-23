@@ -17,7 +17,7 @@ export const Uuid = t.brand(
   t.string,
   (x): x is t.Branded<string, UuidBrand> =>
     typeof x !== 'string' ||
-    x.match(/^[A-Fa-f0-9]{8}(-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}$/) !== null,
+    x.match('^[A-Fa-f0-9]{8}(-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}$') !== null,
   'Uuid',
 );
 export interface UuidBrand {
@@ -29,7 +29,7 @@ export type Url = t.Branded<string, UrlBrand>;
 export const Url = t.brand(
   t.string,
   (x): x is t.Branded<string, UrlBrand> =>
-    typeof x !== 'string' || x.match(/^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/) !== null,
+    typeof x !== 'string' || x.match('^(https?|ftp):\\/\\/[^\\s/$.?#].[^\\s]*$') !== null,
   'Url',
 );
 export interface UrlBrand {
@@ -41,7 +41,8 @@ export const Arn = t.brand(
   t.string,
   (x): x is t.Branded<string, ArnBrand> =>
     (typeof x !== 'string' ||
-      x.match(/^arn:aws:[a-z]+:[\w\-]*:\d{12}:[ \w\-]+(\/[\w\- \/]+)*/) !== null) &&
+      x.match('^arn:aws:[a-z]+:[\\w\\-]*:\\d{12}:[ \\w\\-]+(\\/[\\w\\- \\/]+)*') !==
+        null) &&
     (typeof x !== 'string' || x.length >= 1) &&
     (typeof x !== 'string' || x.length <= 256),
   'Arn',
@@ -55,7 +56,8 @@ export const IdentityId = t.brand(
   t.string,
   (x): x is t.Branded<string, IdentityIdBrand> =>
     typeof x !== 'string' ||
-    x.match(/^[aepus]{2}-[\w]{4}-\d:[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/) !== null,
+    x.match('^[aepus]{2}-[\\w]{4}-\\d:[a-f\\d]{8}(-[a-f\\d]{4}){3}-[a-f\\d]{12}$') !==
+      null,
   'IdentityId',
 );
 export interface IdentityIdBrand {
@@ -69,12 +71,33 @@ export const Currency = t.brand(
   (x): x is t.Branded<string, CurrencyBrand> =>
     JSON.stringify(x) === JSON.stringify('EUR') ||
     JSON.stringify(x) === JSON.stringify('GBP') ||
-    JSON.stringify(x) === JSON.stringify('SGD') ||
-    JSON.stringify(x) === JSON.stringify('USD'),
+    JSON.stringify(x) === JSON.stringify('SGD'),
   'Currency',
 );
 export interface CurrencyBrand {
   readonly Currency: unique symbol;
+}
+
+export type AgencyId = t.Branded<string, AgencyIdBrand>;
+export const AgencyId = t.brand(
+  t.string,
+  (x): x is t.Branded<string, AgencyIdBrand> =>
+    (typeof x !== 'string' || x.length >= 2) && (typeof x !== 'string' || x.length <= 64),
+  'AgencyId',
+);
+export interface AgencyIdBrand {
+  readonly AgencyId: unique symbol;
+}
+
+export type DeviceToken = t.Branded<string, DeviceTokenBrand>;
+export const DeviceToken = t.brand(
+  t.string,
+  (x): x is t.Branded<string, DeviceTokenBrand> =>
+    typeof x !== 'string' || x.match('^([A-Fa-f0-9]{2}){8,64}$') !== null,
+  'DeviceToken',
+);
+export interface DeviceTokenBrand {
+  readonly DeviceToken: unique symbol;
 }
 
 // POSIX time in milliseconds, https://en.wikipedia.org/wiki/Unix_time
@@ -105,16 +128,102 @@ export interface DurationBrand {
   readonly Duration: unique symbol;
 }
 
+// Signature of a signed object
+export type Signature = t.Branded<string, SignatureBrand>;
+export const Signature = t.brand(
+  t.string,
+  (x): x is t.Branded<string, SignatureBrand> =>
+    (typeof x !== 'string' || x.length >= 1) &&
+    (typeof x !== 'string' || x.length <= 1024),
+  'Signature',
+);
+export interface SignatureBrand {
+  readonly Signature: unique symbol;
+}
+
 // A date in the form YYYY-MM-DD without a time component
 export type IsoDate = t.Branded<string, IsoDateBrand>;
 export const IsoDate = t.brand(
   t.string,
   (x): x is t.Branded<string, IsoDateBrand> =>
-    typeof x !== 'string' || x.match(/^\d{4}-\d{2}-\d{2}/) !== null,
+    typeof x !== 'string' || x.match('^\\d{4}-\\d{2}-\\d{2}') !== null,
   'IsoDate',
 );
 export interface IsoDateBrand {
   readonly IsoDate: unique symbol;
+}
+
+// HTML string of block level content
+export type HtmlBlock = t.Branded<string, HtmlBlockBrand>;
+export const HtmlBlock = t.brand(
+  t.string,
+  (x): x is t.Branded<string, HtmlBlockBrand> => true,
+  'HtmlBlock',
+);
+export interface HtmlBlockBrand {
+  readonly HtmlBlock: unique symbol;
+}
+
+// JSON encoded object or array
+export type JsonParam = t.Branded<string, JsonParamBrand>;
+export const JsonParam = t.brand(
+  t.string,
+  (x): x is t.Branded<string, JsonParamBrand> => typeof x !== 'string' || x.length >= 2,
+  'JsonParam',
+);
+export interface JsonParamBrand {
+  readonly JsonParam: unique symbol;
+}
+
+// First or last name of a customer (e.g. John)
+export type PersonalName = t.Branded<string, PersonalNameBrand>;
+export const PersonalName = t.brand(
+  t.string,
+  (x): x is t.Branded<string, PersonalNameBrand> =>
+    (typeof x !== 'string' ||
+      x.match("^(?:\\p{L})+(?:[`'´\\-\\.,]?\\s?(?:\\p{L})*)*$") !== null) &&
+    (typeof x !== 'string' || x.length <= 255),
+  'PersonalName',
+);
+export interface PersonalNameBrand {
+  readonly PersonalName: unique symbol;
+}
+
+// ITU-T E.164 phone number, see https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9781449327453/ch04s03.html
+export type Phone = t.Branded<string, PhoneBrand>;
+export const Phone = t.brand(
+  t.string,
+  (x): x is t.Branded<string, PhoneBrand> =>
+    typeof x !== 'string' || x.match('^\\+(?:\\d){6,14}\\d$') !== null,
+  'Phone',
+);
+export interface PhoneBrand {
+  readonly Phone: unique symbol;
+}
+
+// Slightly looser definition of phone number
+export type RawPhone = t.Branded<string, RawPhoneBrand>;
+export const RawPhone = t.brand(
+  t.string,
+  (x): x is t.Branded<string, RawPhoneBrand> =>
+    typeof x !== 'string' || x.match('^\\+?(?:\\d){6,14}\\d$') !== null,
+  'RawPhone',
+);
+export interface RawPhoneBrand {
+  readonly RawPhone: unique symbol;
+}
+
+// Rough validation of a valid e-mail address, see https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
+export type Email = t.Branded<string, EmailBrand>;
+export const Email = t.brand(
+  t.string,
+  (x): x is t.Branded<string, EmailBrand> =>
+    (typeof x !== 'string' || x.match('^.+@.+\\..+$') !== null) &&
+    (typeof x !== 'string' || x.length <= 64),
+  'Email',
+);
+export interface EmailBrand {
+  readonly Email: unique symbol;
 }
 
 // Success

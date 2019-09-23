@@ -26,8 +26,7 @@ export const BookingState = t.brand(
     JSON.stringify(x) === JSON.stringify('CANCELLED') ||
     JSON.stringify(x) === JSON.stringify('EXPIRED') ||
     JSON.stringify(x) === JSON.stringify('REJECTED') ||
-    JSON.stringify(x) === JSON.stringify('FINISHED') ||
-    JSON.stringify(x) === JSON.stringify('UNKNOWN'),
+    JSON.stringify(x) === JSON.stringify('FINISHED'),
   'BookingState',
 );
 export interface BookingStateBrand {
