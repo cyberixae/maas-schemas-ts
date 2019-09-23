@@ -37,16 +37,22 @@ const exps = new Set<string>();
 let failure: any = false;
 
 function notImplemented(pre: string, item: string, post: string) {
-  const where = supportedAtRoot.includes(item) ? 'outside DIRECT exports' : '';
+  const WARNING = 'WARNING';
+  const ERROR = 'ERROR';
+  const isOutsideRoot = supportedAtRoot.includes(item);
+  const level = isOutsideRoot ? WARNING : ERROR;
+  const where = isOutsideRoot ? 'outside DIRECT exports' : '';
   console.error(),
     console.error(
-      ['ERROR:', pre, item, post, 'NOT supported', where, 'by convert.ts']
+      [`${level}:`, pre, item, post, 'NOT supported', where, 'by convert.ts']
         .filter((s) => s.length > 0)
         .join(' '),
     );
   console.error(`  in ${path.resolve(inputFile)}`);
   // eslint-disable-next-line
-  failure = true;
+  if (level === WARNING) {
+    failure = true;
+  }
   const escalate = "throw new Error('schema conversion failed')";
   return gen.customCombinator(escalate, escalate);
 }
