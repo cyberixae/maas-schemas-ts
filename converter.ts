@@ -67,10 +67,10 @@ function getRequiredProperties(schema: JSONSchema7): { [key: string]: true } {
   return required;
 }
 
-function toInterfaceCombinator(schema: JSONSchema7): gen.InterfaceCombinator {
+function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
   const properties = schema.properties || {};
   const required = getRequiredProperties(schema);
-  return gen.interfaceCombinator(
+  const combinator = gen.interfaceCombinator(
     Object.entries(properties).map(<K extends string, V>([key, value]: [K, V]) =>
       gen.property(
         key,
@@ -80,6 +80,16 @@ function toInterfaceCombinator(schema: JSONSchema7): gen.InterfaceCombinator {
       ),
     ),
   );
+  if (schema.hasOwnProperty('additionalProperties') === false) {
+    return combinator;
+  }
+  if (typeof schema.additionalProperties !== 'boolean') {
+    return notImplemented('specific additionalProperties SCHEMA');
+  }
+  if (schema.additionalProperties === false) {
+    return gen.exactCombinator(combinator);
+  }
+  return combinator;
 }
 
 function checkPattern(x: string, pattern: string): string {
@@ -145,7 +155,7 @@ function fromRef(refString: string): gen.TypeReference {
   const [basefile] = withoutPath.split('.json');
   const importName = `${camelFromKebab(basefile)}_`;
   const domain = 'http://maasglobal.com/';
-  if (ref.filePath.startsWith(domain) === false) {
+  if (ref.filePath.startsWith(domain)) {
     const URI = ref.filePath;
     const [, withoutDomain] = ref.filePath.split(domain);
     const [fullPath] = withoutDomain.split('.json');
@@ -173,6 +183,7 @@ function isSupported(feature: string) {
     'pattern',
     'properties',
     'required',
+    'additionalProperties',
     'enum',
   ];
   return supported.includes(feature);
