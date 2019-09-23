@@ -36,9 +36,14 @@ const exps = new Set<string>();
 // eslint-disable-next-line
 let failure: any = false;
 
-function notImplemented(item: string) {
-  const where = supportedAtRoot.includes(item) ? '' : ' at ROOT '
-  console.error(), console.error(`ERROR: ${item} NOT supported ${where} by convert.ts`);
+function notImplemented(pre: string, item: string, post: string) {
+  const where = supportedAtRoot.includes(item) ? 'outside DIRECT exports' : '';
+  console.error(),
+    console.error(
+      ['ERROR:', pre, item, post, 'NOT supported', where, 'by convert.ts']
+        .filter((s) => s.length > 0)
+        .join(' '),
+    );
   console.error(`  in ${path.resolve(inputFile)}`);
   // eslint-disable-next-line
   failure = true;
@@ -105,7 +110,7 @@ function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
     return combinator;
   }
   if (typeof schema.additionalProperties !== 'boolean') {
-    return notImplemented('specific additionalProperties SCHEMA');
+    return notImplemented('specific', 'additionalProperties', 'SCHEMA');
   }
   if (schema.additionalProperties === false) {
     return gen.exactCombinator(combinator);
@@ -197,7 +202,7 @@ function isSupported(feature: string, isRoot: boolean) {
   return supportedEverywhere.includes(feature);
 }
 
-function fromSchema(schema: JSONSchema7Definition, isRoot=false): gen.TypeReference {
+function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeReference {
   if (typeof schema === 'boolean') {
     imps.add("import * as t from 'io-ts';");
     return gen.literalCombinator(schema);
@@ -205,7 +210,7 @@ function fromSchema(schema: JSONSchema7Definition, isRoot=false): gen.TypeRefere
   // eslint-disable-next-line
   for (const key in schema) {
     if (isSupported(key, isRoot) !== true) {
-      return notImplemented(key + ' FIELD');
+      return notImplemented('', key, 'FIELD');
     }
   }
   if ('$ref' in schema) {
@@ -227,13 +232,13 @@ function fromSchema(schema: JSONSchema7Definition, isRoot=false): gen.TypeRefere
     case 'object':
       return toInterfaceCombinator(schema);
     case 'array':
-      return notImplemented('array TYPE');
+      return notImplemented('', 'array', 'TYPE');
   }
   if ('enum' in schema) {
-    return notImplemented('standalone enum TYPE');
+    return notImplemented('standalone', 'enum', 'TYPE');
   }
   if (typeof schema.type !== 'undefined') {
-    return notImplemented(`${JSON.stringify(schema.type)} TYPE`);
+    return notImplemented('', JSON.stringify(schema.type), 'TYPE');
   }
   // eslint-disable-next-line
   throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
@@ -342,7 +347,7 @@ function fromRoot(
 function fromFile(
   schema: JSONSchema7,
 ): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
-  return fromRoot(schema).concat(fromDefinitions(schema.definitions));
+  return fromDefinitions(schema.definitions).concat(fromRoot(schema));
 }
 
 const declarations = fromFile(schema as JSONSchema7);
