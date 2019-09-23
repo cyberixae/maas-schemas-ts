@@ -50,11 +50,12 @@ function notImplemented(pre: string, item: string, post: string) {
     );
   console.error(`  in ${path.resolve(inputFile)}`);
   // eslint-disable-next-line
-  if (level === WARNING) {
+  if (level === ERROR) {
     failure = true;
+    const escalate = "throw new Error('schema conversion failed')";
+    return gen.customCombinator(escalate, escalate);
   }
-  const escalate = "throw new Error('schema conversion failed')";
-  return gen.customCombinator(escalate, escalate);
+  return null;
 }
 
 function capitalize(word: string) {
@@ -116,7 +117,10 @@ function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
     return combinator;
   }
   if (typeof schema.additionalProperties !== 'boolean') {
-    return notImplemented('specific', 'additionalProperties', 'SCHEMA');
+    const escalate = notImplemented('specific', 'additionalProperties', 'SCHEMA');
+    if (escalate !== null) {
+      return escalate;
+    }
   }
   if (schema.additionalProperties === false) {
     return gen.exactCombinator(combinator);
@@ -216,7 +220,10 @@ function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeRefe
   // eslint-disable-next-line
   for (const key in schema) {
     if (isSupported(key, isRoot) !== true) {
-      return notImplemented('', key, 'FIELD');
+      const escalate = notImplemented('', key, 'FIELD');
+      if (escalate !== null) {
+        return escalate;
+      }
     }
   }
   if ('$ref' in schema) {
@@ -238,13 +245,22 @@ function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeRefe
     case 'object':
       return toInterfaceCombinator(schema);
     case 'array':
-      return notImplemented('', 'array', 'TYPE');
+      const escalate = notImplemented('', 'array', 'TYPE');
+      if (escalate !== null) {
+        return escalate;
+      }
   }
   if ('enum' in schema) {
-    return notImplemented('standalone', 'enum', 'TYPE');
+    const escalate = notImplemented('standalone', 'enum', 'TYPE');
+    if (escalate !== null) {
+      return escalate;
+    }
   }
   if (typeof schema.type !== 'undefined') {
-    return notImplemented('', JSON.stringify(schema.type), 'TYPE');
+    const escalate = notImplemented('', JSON.stringify(schema.type), 'TYPE');
+    if (escalate !== null) {
+      return escalate;
+    }
   }
   // eslint-disable-next-line
   throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
