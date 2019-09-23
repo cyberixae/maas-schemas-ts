@@ -5,6 +5,26 @@ import path from 'path';
 import * as gen from 'io-ts-codegen';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
+const supportedEverywhere = [
+  '$ref',
+  '$id',
+  'title',
+  'description',
+  'definitions',
+  'type',
+  'properties',
+  'required',
+  'additionalProperties',
+];
+const supportedAtRoot = [
+  'minimum',
+  'maximum',
+  'minLength',
+  'maxLength',
+  'pattern',
+  'enum',
+];
+
 const [, , inputFile, outputDir] = process.argv;
 const outputFile = path.join(outputDir, inputFile.split('.json').join('.ts'));
 
@@ -17,7 +37,8 @@ const exps = new Set<string>();
 let failure: any = false;
 
 function notImplemented(item: string) {
-  console.error(), console.error(`ERROR: ${item} NOT supported by convert.ts`);
+  const where = supportedAtRoot.includes(item) ? '' : ' at ROOT '
+  console.error(), console.error(`ERROR: ${item} NOT supported ${where} by convert.ts`);
   console.error(`  in ${path.resolve(inputFile)}`);
   // eslint-disable-next-line
   failure = true;
@@ -93,7 +114,8 @@ function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
 }
 
 function checkPattern(x: string, pattern: string): string {
-  return `( typeof x !== 'string' || ${x}.match(/${pattern}/) !== null )`;
+  const stringLiteral = JSON.stringify(pattern);
+  return `( typeof x !== 'string' || ${x}.match(${stringLiteral}) !== null )`;
 }
 
 function checkMinLength(x: string, minLength: number): string {
@@ -157,7 +179,7 @@ function fromRef(refString: string): gen.TypeReference {
   const domain = 'http://maasglobal.com/';
   if (ref.filePath.startsWith(domain)) {
     const URI = ref.filePath;
-    const [, withoutDomain] = ref.filePath.split(domain);
+    const [, withoutDomain] = URI.split(domain);
     const [fullPath] = withoutDomain.split('.json');
     imps.add(`import * as ${importName} from 'src/${fullPath}';`);
   } else {
@@ -168,35 +190,21 @@ function fromRef(refString: string): gen.TypeReference {
   return gen.customCombinator(variableRef, variableRef);
 }
 
-function isSupported(feature: string) {
-  const supported = [
-    '$ref',
-    '$id',
-    'title',
-    'description',
-    'definitions',
-    'type',
-    'minimum',
-    'maximum',
-    'minLength',
-    'maxLength',
-    'pattern',
-    'properties',
-    'required',
-    'additionalProperties',
-    'enum',
-  ];
-  return supported.includes(feature);
+function isSupported(feature: string, isRoot: boolean) {
+  if (isRoot && supportedAtRoot.includes(feature)) {
+    return true;
+  }
+  return supportedEverywhere.includes(feature);
 }
 
-function fromSchema(schema: JSONSchema7Definition): gen.TypeReference {
+function fromSchema(schema: JSONSchema7Definition, isRoot=false): gen.TypeReference {
   if (typeof schema === 'boolean') {
     imps.add("import * as t from 'io-ts';");
     return gen.literalCombinator(schema);
   }
   // eslint-disable-next-line
   for (const key in schema) {
-    if (isSupported(key) !== true) {
+    if (isSupported(key, isRoot) !== true) {
       return notImplemented(key + ' FIELD');
     }
   }
@@ -248,7 +256,7 @@ function fromDefinitions(
         description,
         gen.typeDeclaration(
           name,
-          gen.brandCombinator(fromSchema(scem), (_x) => 'true', name),
+          gen.brandCombinator(fromSchema(scem, true), (_x) => 'true', name),
           true,
         ),
       ];
@@ -272,7 +280,7 @@ function fromDefinitions(
       scem.description,
       gen.typeDeclaration(
         name,
-        gen.brandCombinator(fromSchema(scem), (x) => generateChecks(x, scem), name),
+        gen.brandCombinator(fromSchema(scem, true), (x) => generateChecks(x, scem), name),
         true,
       ),
     ];
@@ -293,7 +301,7 @@ function fromNonRefRoot(
         gen.typeDeclaration(
           'Default',
           gen.brandCombinator(
-            fromSchema(schema),
+            fromSchema(schema, true),
             (x) => generateChecks(x, schema),
             'Default',
           ),
