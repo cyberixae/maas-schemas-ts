@@ -41,7 +41,8 @@ enum ErrorCode {
 }
 type OK = 0;
 const OK: OK = 0;
-type ReturnCode = OK|ErrorCode
+type ReturnCode = OK | ErrorCode;
+// eslint-disable-next-line
 let returnCode: ReturnCode = OK;
 
 function updateFailure(level: ErrorCode) {
@@ -52,9 +53,9 @@ function updateFailure(level: ErrorCode) {
   returnCode = level;
 }
 
-function notImplemented(pre: string, item: string, post: string) {
+function notImplemented(pre: string, item: string, post: string, fatal = false) {
   const isOutsideRoot = supportedAtRoot.includes(item);
-  const level = isOutsideRoot ? ErrorCode.WARNING : ErrorCode.ERROR;
+  const level = fatal !== true && isOutsideRoot ? ErrorCode.WARNING : ErrorCode.ERROR;
   const where = isOutsideRoot ? 'outside DIRECT exports' : '';
   console.error(),
     console.error(
@@ -132,7 +133,7 @@ function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
     return combinator;
   }
   if (typeof schema.additionalProperties !== 'boolean') {
-    const escalate = notImplemented('specific', 'additionalProperties', 'SCHEMA');
+    const escalate = notImplemented('specific', 'additionalProperties', 'SCHEMA', true);
     if (escalate !== null) {
       return escalate;
     }
@@ -260,19 +261,19 @@ function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeRefe
     case 'object':
       return toInterfaceCombinator(schema);
     case 'array':
-      const escalate = notImplemented('', 'array', 'TYPE');
+      const escalate = notImplemented('', 'array', 'TYPE', true);
       if (escalate !== null) {
         return escalate;
       }
   }
   if ('enum' in schema) {
-    const escalate = notImplemented('standalone', 'enum', 'TYPE');
+    const escalate = notImplemented('standalone', 'enum', 'TYPE', true);
     if (escalate !== null) {
       return escalate;
     }
   }
   if (typeof schema.type !== 'undefined') {
-    const escalate = notImplemented('', JSON.stringify(schema.type), 'TYPE');
+    const escalate = notImplemented('', JSON.stringify(schema.type), 'TYPE', true);
     if (escalate !== null) {
       return escalate;
     }
