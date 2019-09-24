@@ -21,8 +21,11 @@ const supportedEverywhere = [
 const supportedAtRoot = [
   'minimum',
   'maximum',
+  'multipleOf',
   'minLength',
   'maxLength',
+  'minItems',
+  'maxItems',
   'pattern',
   'enum',
 ];
@@ -171,11 +174,23 @@ function checkMinimum(x: string, minimum: number): string {
 }
 
 function checkMaximum(x: string, maximum: number): string {
-  return `( typeof x !== 'string' || ${x} <= ${maximum} )`;
+  return `( typeof x !== 'number' || ${x} <= ${maximum} )`;
+}
+
+function checkMultipleOf(x: string, divisor: number): string {
+  return `( typeof x !== 'number' || ${x} % ${divisor} === 0 )`;
 }
 
 function checkInteger(x: string): string {
   return `( Number.isInteger(${x}) )`;
+}
+
+function checkMinItems(x: string, minItems: number): string {
+  return `( Array.isArray(x) === false || ${x}.length >= ${minItems} )`;
+}
+
+function checkMaxItems(x: string, maxItems: number): string {
+  return `( Array.isArray(x) === false || ${x}.length <= ${maxItems} )`;
 }
 
 function checkEnum(x: string, examples: Array<any>): string {
@@ -196,7 +211,10 @@ function generateChecks(x: string, schema: JSONSchema7): string {
     ...(schema.maxLength ? [checkMaxLength(x, schema.maxLength)] : []),
     ...(schema.minimum ? [checkMinimum(x, schema.minimum)] : []),
     ...(schema.maximum ? [checkMaximum(x, schema.maximum)] : []),
+    ...(schema.multipleOf ? [checkMultipleOf(x, schema.multipleOf)] : []),
     ...(schema.type === 'integer' ? [checkInteger(x)] : []),
+    ...(schema.minItems ? [checkMinItems(x, schema.minItems)] : []),
+    ...(schema.maxItems ? [checkMaxItems(x, schema.maxItems)] : []),
     ...(schema.enum ? [checkEnum(x, schema.enum)] : []),
   ];
   if (checks.length < 1) {
