@@ -15,6 +15,8 @@ const supportedEverywhere = [
   'properties',
   'required',
   'additionalProperties',
+  'allOf',
+  'anyOf',
 ];
 const supportedAtRoot = [
   'minimum',
@@ -235,6 +237,58 @@ function isSupported(feature: string, isRoot: boolean) {
   return supportedEverywhere.includes(feature);
 }
 
+function fromType(schema): [gen.TypeReference] | [] {
+  switch (schema.type) {
+    case 'string':
+      return [gen.stringType];
+    case 'number':
+    case 'integer':
+      return [gen.numberType];
+    case 'boolean':
+      return [gen.booleanType];
+    case 'object':
+      return [toInterfaceCombinator(schema)];
+    case 'array':
+      const escalate = notImplemented('', 'array', 'TYPE', true);
+      if (escalate !== null) {
+        return [escalate];
+      }
+  }
+  if (typeof schema.type !== 'undefined') {
+    const escalate = notImplemented('', JSON.stringify(schema.type), 'TYPE', true);
+    if (escalate !== null) {
+      return [escalate];
+    }
+  }
+  return [];
+}
+
+function fromEnum(schema): [gen.TypeReference] | [] {
+  if ('enum' in schema) {
+    const escalate = notImplemented('standalone', 'enum', 'TYPE', true);
+    if (escalate !== null) {
+      return [escalate];
+    }
+  }
+  return [];
+}
+
+function fromAllOf(schema): [gen.TypeReference] | [] {
+  if ('allOf' in schema) {
+    const combinators = schema.allOf.map(fromSchema);
+    return [gen.intersectionCombinator(combinators)];
+  }
+  return [];
+}
+
+function fromAnyOf(schema): [gen.TypeReference] | [] {
+  if ('anyOf' in schema) {
+    const combinators = schema.anyOf.map(fromSchema);
+    return [gen.unionCombinator(combinators)];
+  }
+  return [];
+}
+
 function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeReference {
   if (typeof schema === 'boolean') {
     imps.add("import * as t from 'io-ts';");
@@ -257,36 +311,21 @@ function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeRefe
     return fromRef(schema['$ref']);
   }
   imps.add("import * as t from 'io-ts';");
-  switch (schema.type) {
-    case 'string':
-      return gen.stringType;
-    case 'number':
-    case 'integer':
-      return gen.numberType;
-    case 'boolean':
-      return gen.booleanType;
-    case 'object':
-      return toInterfaceCombinator(schema);
-    case 'array':
-      const escalate = notImplemented('', 'array', 'TYPE', true);
-      if (escalate !== null) {
-        return escalate;
-      }
+  const combinators = [
+    ...fromType(schema),
+    ...fromEnum(schema),
+    ...fromAllOf(schema),
+    ...fromAnyOf(schema),
+  ];
+  if (combinators.length < 1) {
+    // eslint-disable-next-line
+    throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
   }
-  if ('enum' in schema) {
-    const escalate = notImplemented('standalone', 'enum', 'TYPE', true);
-    if (escalate !== null) {
-      return escalate;
-    }
+  if (combinators.length === 1) {
+    const [combinator] = combinators;
+    return combinator;
   }
-  if (typeof schema.type !== 'undefined') {
-    const escalate = notImplemented('', JSON.stringify(schema.type), 'TYPE', true);
-    if (escalate !== null) {
-      return escalate;
-    }
-  }
-  // eslint-disable-next-line
-  throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
+  return gen.intersectionCombinator(combinators);
 }
 
 function fromDefinitions(
