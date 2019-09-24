@@ -335,15 +335,19 @@ function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeRefe
     ...fromAllOf(schema),
     ...fromAnyOf(schema),
   ];
-  if (combinators.length < 1) {
-    // eslint-disable-next-line
-    throw new Error(`unknown schema: ${JSON.stringify(schema)}`)
+  if (combinators.length > 1) {
+    return gen.intersectionCombinator(combinators);
   }
   if (combinators.length === 1) {
     const [combinator] = combinators;
     return combinator;
   }
-  return gen.intersectionCombinator(combinators);
+  if (generateChecks('x', schema).length > 1) {
+    // skip checks
+    return;
+  }
+  // eslint-disable-next-line
+  throw new Error(`unknown schema: ${JSON.stringify(schema)}`);
 }
 
 function fromDefinitions(
