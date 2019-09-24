@@ -53,25 +53,32 @@ function updateFailure(level: ErrorCode) {
   returnCode = level;
 }
 
-function notImplemented(pre: string, item: string, post: string, fatal = false) {
-  const isOutsideRoot = supportedAtRoot.includes(item);
-  const level = fatal !== true && isOutsideRoot ? ErrorCode.WARNING : ErrorCode.ERROR;
-  const where = isOutsideRoot ? 'outside DIRECT exports' : '';
-  console.error(),
-    console.error(
-      [`${level}:`, pre, item, post, 'NOT supported', where, 'by convert.ts']
-        .filter((s) => s.length > 0)
-        .join(' '),
-    );
-  console.error(`  in ${path.resolve(inputFile)}`);
-
-  updateFailure(level);
-
-  if (level === ErrorCode.WARNING) {
-    return null;
-  }
+function error(message: string) {
+  updateFailure(ErrorCode.ERROR);
+  // eslint-disable-next-line
+  console.error(`ERROR: ${message}`);
   const escalate = "throw new Error('schema conversion failed')";
   return gen.customCombinator(escalate, escalate);
+}
+function warning(message: string) {
+  updateFailure(ErrorCode.WARNING);
+  // eslint-disable-next-line
+  console.error(`WARNING ${message}`);
+}
+
+function notImplemented(pre: string, item: string, post: string, fatal = false) {
+  const isOutsideRoot = supportedAtRoot.includes(item);
+  const where = isOutsideRoot ? 'outside DIRECT exports' : '';
+  const message =
+    [pre, item, post, 'NOT supported', where, 'by convert.ts']
+      .filter((s) => s.length > 0)
+      .join(' ') + `\n  in ${path.resolve(inputFile)}`;
+
+  if (fatal !== true && isOutsideRoot) {
+    warning(message);
+    return null;
+  }
+  return error(message);
 }
 
 function capitalize(word: string) {
