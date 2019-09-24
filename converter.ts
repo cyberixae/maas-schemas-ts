@@ -25,7 +25,7 @@ const supportedAtRoot = [
   'enum',
 ];
 
-const [, , inputFile, outputDir] = process.argv;
+const [, , inputFile, outputDir, strict] = process.argv;
 const outputFile = path.join(outputDir, inputFile.split('.json').join('.ts'));
 
 const schema: JSONSchema7 = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
@@ -35,14 +35,26 @@ const exps = new Set<string>();
 const titles: Record<string, string | undefined> = {};
 const descriptions: Record<string, string | undefined> = {};
 
-// eslint-disable-next-line
-let failure: any = false;
+enum ErrorCode {
+  WARNING = 1,
+  ERROR = 2,
+}
+type OK = 0;
+const OK: OK = 0;
+type ReturnCode = OK|ErrorCode
+let returnCode: ReturnCode = OK;
+
+function updateFailure(level: ErrorCode) {
+  if (returnCode === ErrorCode.ERROR) {
+    return;
+  }
+  // eslint-disable-next-line
+  returnCode = level;
+}
 
 function notImplemented(pre: string, item: string, post: string) {
-  const WARNING = 'WARNING';
-  const ERROR = 'ERROR';
   const isOutsideRoot = supportedAtRoot.includes(item);
-  const level = isOutsideRoot ? WARNING : ERROR;
+  const level = isOutsideRoot ? ErrorCode.WARNING : ErrorCode.ERROR;
   const where = isOutsideRoot ? 'outside DIRECT exports' : '';
   console.error(),
     console.error(
@@ -51,13 +63,14 @@ function notImplemented(pre: string, item: string, post: string) {
         .join(' '),
     );
   console.error(`  in ${path.resolve(inputFile)}`);
-  if (level === ERROR) {
-    // eslint-disable-next-line
-    failure = true;
-    const escalate = "throw new Error('schema conversion failed')";
-    return gen.customCombinator(escalate, escalate);
+
+  updateFailure(level);
+
+  if (level === ErrorCode.WARNING) {
+    return null;
   }
-  return null;
+  const escalate = "throw new Error('schema conversion failed')";
+  return gen.customCombinator(escalate, escalate);
 }
 
 function capitalize(word: string) {
@@ -385,8 +398,11 @@ const defs: Array<[string, string, string]> = declarations.map((d) => [
   gen.printRuntime(d).replace(/\ninterface /, '\nexport interface '),
 ]);
 
-if (failure === true) {
-  process.exit();
+if (returnCode === ErrorCode.ERROR) {
+  process.exit(returnCode);
+}
+if (returnCode === ErrorCode.WARNING && strict === '--strict') {
+  process.exit(returnCode);
 }
 
 fs.mkdirSync(path.dirname(outputFile), { recursive: true });
