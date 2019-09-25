@@ -20,6 +20,7 @@ const supportedEverywhere = [
   'anyOf',
   'enum',
   'const',
+  'items',
 ];
 const supportedAtRoot = [
   'minimum',
@@ -194,6 +195,21 @@ function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
     return gen.exactCombinator(combinator);
   }
   return combinator;
+
+}
+
+function toArrayCombinator(schema: JSONSchema7): gen.TypeReference {
+
+  if ('items' in schema && typeof schema.items !== 'undefined' && typeof schema.items !== 'boolean') {
+    if (schema.items instanceof Array) {
+      const combinators = schema.items.map((s) => fromSchema(s));
+      return gen.tupleCombinator(combinators);
+    }
+    return gen.arrayCombinator(
+      fromSchema(schema.items),
+    );
+  }
+  throw new Error(`arrays without specific ITEMS are not supported ${JSON.stringify(schema)}`);
 }
 
 function checkPattern(x: string, pattern: string): string {
@@ -315,10 +331,7 @@ function fromType(schema: JSONSchema7): [gen.TypeReference] | [] {
     case 'object':
       return [toInterfaceCombinator(schema)];
     case 'array':
-      const escalate = notImplemented('', 'array', 'TYPE', true);
-      if (escalate !== null) {
-        return [escalate];
-      }
+      return [toArrayCombinator(schema)];
   }
   if (typeof schema.type !== 'undefined') {
     const escalate = notImplemented('', JSON.stringify(schema.type), 'TYPE', true);
