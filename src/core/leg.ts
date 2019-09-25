@@ -203,7 +203,7 @@ export interface TransferLegBrand {
 // Default
 // The purpose of this remains a mystery
 export type Default = t.Branded<
-  {} & LegExtensions & (LegCore | WaitingLeg | TransferLeg),
+  {} & (LegExtensions & (LegCore | WaitingLeg | TransferLeg)),
   DefaultBrand
 >;
 export const Default = t.brand(
@@ -214,7 +214,7 @@ export const Default = t.brand(
   (
     x,
   ): x is t.Branded<
-    {} & LegExtensions & (LegCore | WaitingLeg | TransferLeg),
+    {} & (LegExtensions & (LegCore | WaitingLeg | TransferLeg)),
     DefaultBrand
   > => true,
   'Default',

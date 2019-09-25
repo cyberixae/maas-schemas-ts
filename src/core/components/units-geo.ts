@@ -171,17 +171,17 @@ export interface ShortLocationStringBrand {
 // Place
 // A place, as a location-name pair with name and address
 export type Place = t.Branded<
-  {} & RelaxedLocation & {
-      name?: Address_.PlaceName;
-      address?: Address_.ComponentAddress;
-      localeAddress?: string;
-      stopId?: string;
-      stopCode?: string;
-      stationId?: string;
-      facilities?: Array<string>;
-      openingHours?: Station_.OpeningHours;
-      zone?: Station_.Zone;
-    },
+  {} & (RelaxedLocation & {
+    name?: Address_.PlaceName;
+    address?: Address_.ComponentAddress;
+    localeAddress?: string;
+    stopId?: string;
+    stopCode?: string;
+    stationId?: string;
+    facilities?: Array<string>;
+    openingHours?: Station_.OpeningHours;
+    zone?: Station_.Zone;
+  }),
   PlaceBrand
 >;
 export const Place = t.brand(
@@ -205,17 +205,17 @@ export const Place = t.brand(
   (
     x,
   ): x is t.Branded<
-    {} & RelaxedLocation & {
-        name?: Address_.PlaceName;
-        address?: Address_.ComponentAddress;
-        localeAddress?: string;
-        stopId?: string;
-        stopCode?: string;
-        stationId?: string;
-        facilities?: Array<string>;
-        openingHours?: Station_.OpeningHours;
-        zone?: Station_.Zone;
-      },
+    {} & (RelaxedLocation & {
+      name?: Address_.PlaceName;
+      address?: Address_.ComponentAddress;
+      localeAddress?: string;
+      stopId?: string;
+      stopCode?: string;
+      stationId?: string;
+      facilities?: Array<string>;
+      openingHours?: Station_.OpeningHours;
+      zone?: Station_.Zone;
+    }),
     PlaceBrand
   > => true,
   'Place',
