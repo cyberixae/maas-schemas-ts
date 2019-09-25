@@ -152,13 +152,9 @@ function fromProperties(schema: JSONSchema7): [gen.TypeReference] | [] {
 function fromPatternProperties(schema: JSONSchema7): Array<gen.TypeReference> {
   if ('patternProperties' in schema && typeof schema.patternProperties !== 'undefined') {
     warning('patternProperty KEY validation NOT implemented');
-    const required = getRequiredProperties(schema);
-    const combinators = 
-    Object.entries(schema.patternProperties).map(<K extends string, V>([key, value]: [K, V]) =>
-      gen.recordCombinator(
-        gen.stringType,
-        fromSchema(value),
-      ),
+    const combinators = Object.entries(schema.patternProperties).map(
+      <K extends string, V>([_key, value]: [K, V]) =>
+        gen.recordCombinator(gen.stringType, fromSchema(value)),
     );
     return combinators;
   }
@@ -166,11 +162,7 @@ function fromPatternProperties(schema: JSONSchema7): Array<gen.TypeReference> {
 }
 
 function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
-
-  const combinators = [
-    ...fromProperties(schema),
-    ...fromPatternProperties(schema),
-  ];
+  const combinators = [...fromProperties(schema), ...fromPatternProperties(schema)];
   const combinator = (() => {
     if (combinators.length > 1) {
       return gen.intersectionCombinator(combinators);
@@ -195,21 +187,24 @@ function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
     return gen.exactCombinator(combinator);
   }
   return combinator;
-
 }
 
 function toArrayCombinator(schema: JSONSchema7): gen.TypeReference {
-
-  if ('items' in schema && typeof schema.items !== 'undefined' && typeof schema.items !== 'boolean') {
+  if (
+    'items' in schema &&
+    typeof schema.items !== 'undefined' &&
+    typeof schema.items !== 'boolean'
+  ) {
     if (schema.items instanceof Array) {
       const combinators = schema.items.map((s) => fromSchema(s));
       return gen.tupleCombinator(combinators);
     }
-    return gen.arrayCombinator(
-      fromSchema(schema.items),
-    );
+    return gen.arrayCombinator(fromSchema(schema.items));
   }
-  throw new Error(`arrays without specific ITEMS are not supported ${JSON.stringify(schema)}`);
+  // eslint-disable-next-line
+  throw new Error(
+    `arrays without specific ITEMS are not supported ${JSON.stringify(schema)}`,
+  );
 }
 
 function checkPattern(x: string, pattern: string): string {
@@ -314,6 +309,7 @@ function fromType(schema: JSONSchema7): [gen.TypeReference] | [] {
         case 'null':
           return gen.nullType;
       }
+      // eslint-disable-next-line
       throw new Error(`${t}s are not supported as part of type MULTIPLES`);
     });
     return [gen.unionCombinator(combinators)];
@@ -351,6 +347,7 @@ function fromEnum(schema: JSONSchema7): [gen.TypeReference] | [] {
         case 'number':
           return gen.literalCombinator(s);
       }
+      // eslint-disable-next-line
       throw new Error(`${typeof s}s are not supported as part of ENUM`);
     });
     return [gen.unionCombinator(combinators)];
@@ -366,6 +363,7 @@ function fromConst(schema: JSONSchema7): [gen.TypeReference] | [] {
       case 'number':
         return [gen.literalCombinator(schema.const)];
     }
+    // eslint-disable-next-line
     throw new Error(`${typeof schema.const}s are not supported as part of CONST`);
   }
   return [];
