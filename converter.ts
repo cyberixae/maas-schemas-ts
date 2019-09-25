@@ -255,7 +255,7 @@ function isSupported(feature: string, isRoot: boolean) {
   return supportedEverywhere.includes(feature);
 }
 
-function fromType(schema): [gen.TypeReference] | [] {
+function fromType(schema: JSONSchema7): [gen.TypeReference] | [] {
   switch (schema.type) {
     case 'string':
       return [gen.stringType];
@@ -281,8 +281,8 @@ function fromType(schema): [gen.TypeReference] | [] {
   return [];
 }
 
-function fromEnum(schema): [gen.TypeReference] | [] {
-  if ('enum' in schema) {
+function fromEnum(schema: JSONSchema7): [gen.TypeReference] | [] {
+  if ('enum' in schema && typeof schema.enum !== 'undefined') {
     const escalate = notImplemented('standalone', 'enum', 'TYPE', true);
     if (escalate !== null) {
       return [escalate];
@@ -291,17 +291,17 @@ function fromEnum(schema): [gen.TypeReference] | [] {
   return [];
 }
 
-function fromAllOf(schema): [gen.TypeReference] | [] {
-  if ('allOf' in schema) {
-    const combinators = schema.allOf.map(fromSchema);
+function fromAllOf(schema: JSONSchema7): [gen.TypeReference] | [] {
+  if ('allOf' in schema && typeof schema.allOf !== 'undefined') {
+    const combinators = schema.allOf.map((s) => fromSchema(s));
     return [gen.intersectionCombinator(combinators)];
   }
   return [];
 }
 
-function fromAnyOf(schema): [gen.TypeReference] | [] {
-  if ('anyOf' in schema) {
-    const combinators = schema.anyOf.map(fromSchema);
+function fromAnyOf(schema: JSONSchema7): [gen.TypeReference] | [] {
+  if ('anyOf' in schema && typeof schema.anyOf !== 'undefined') {
+    const combinators = schema.anyOf.map((s) => fromSchema(s));
     return [gen.unionCombinator(combinators)];
   }
   return [];
@@ -344,7 +344,7 @@ function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeRefe
   }
   if (generateChecks('x', schema).length > 1) {
     // skip checks
-    return;
+    return gen.unknownType;
   }
   // eslint-disable-next-line
   throw new Error(`unknown schema: ${JSON.stringify(schema)}`);
