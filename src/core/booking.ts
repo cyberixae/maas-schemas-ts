@@ -43,242 +43,277 @@ import * as CustomerSelection_ from 'components/customerSelection.json';
 export const schemaId = 'http://maasglobal.com/core/booking.json#';
 // TspId
 // The purpose of this remains a mystery
-export type TspId = t.Branded<string, TspIdBrand>
-export const TspId = t.brand(t.string, (x): x is t.Branded<string, TspIdBrand> => ( typeof x !== 'string' || x.length >= 1 ) && ( typeof x !== 'string' || x.length <= 256 ), 'TspId')
+export type TspId = t.Branded<string, TspIdBrand>;
+export const TspId = t.brand(
+  t.string,
+  (x): x is t.Branded<string, TspIdBrand> =>
+    (typeof x !== 'string' || x.length >= 1) &&
+    (typeof x !== 'string' || x.length <= 256),
+  'TspId',
+);
 export interface TspIdBrand {
-  readonly TspId: unique symbol
+  readonly TspId: unique symbol;
 }
 // Leg
 // MaaS response may return any subset of legCore
-export type Leg = t.Branded<{
-  signature?: Common_.Signature,
-  from?: Leg_.From,
-  to?: Leg_.To,
-  startTime?: Leg_.StartTime,
-  endTime?: Leg_.EndTime,
-  mode?: Leg_.Mode,
-  departureDelay?: Leg_.DepartureDelay,
-  arrivalDelay?: Leg_.ArrivalDelay,
-  distance?: Leg_.Distance,
-  state?: Leg_.State,
-  route?: Leg_.Route,
-  routeShortName?: Leg_.RouteShortName,
-  routeLongName?: Leg_.RouteLongName,
-  agencyId?: Leg_.AgencyId,
-  legGeometry?: Leg_.LegGeometry
-}, LegBrand>
-export const Leg = t.brand(t.partial({
-  signature: Common_.Signature,
-  from: Leg_.From,
-  to: Leg_.To,
-  startTime: Leg_.StartTime,
-  endTime: Leg_.EndTime,
-  mode: Leg_.Mode,
-  departureDelay: Leg_.DepartureDelay,
-  arrivalDelay: Leg_.ArrivalDelay,
-  distance: Leg_.Distance,
-  state: Leg_.State,
-  route: Leg_.Route,
-  routeShortName: Leg_.RouteShortName,
-  routeLongName: Leg_.RouteLongName,
-  agencyId: Leg_.AgencyId,
-  legGeometry: Leg_.LegGeometry
-}), (x): x is t.Branded<{
-  signature?: Common_.Signature,
-  from?: Leg_.From,
-  to?: Leg_.To,
-  startTime?: Leg_.StartTime,
-  endTime?: Leg_.EndTime,
-  mode?: Leg_.Mode,
-  departureDelay?: Leg_.DepartureDelay,
-  arrivalDelay?: Leg_.ArrivalDelay,
-  distance?: Leg_.Distance,
-  state?: Leg_.State,
-  route?: Leg_.Route,
-  routeShortName?: Leg_.RouteShortName,
-  routeLongName?: Leg_.RouteLongName,
-  agencyId?: Leg_.AgencyId,
-  legGeometry?: Leg_.LegGeometry
-}, LegBrand> => true, 'Leg')
+export type Leg = t.Branded<
+  {
+    signature?: Common_.Signature;
+    from?: Leg_.From;
+    to?: Leg_.To;
+    startTime?: Leg_.StartTime;
+    endTime?: Leg_.EndTime;
+    mode?: Leg_.Mode;
+    departureDelay?: Leg_.DepartureDelay;
+    arrivalDelay?: Leg_.ArrivalDelay;
+    distance?: Leg_.Distance;
+    state?: Leg_.State;
+    route?: Leg_.Route;
+    routeShortName?: Leg_.RouteShortName;
+    routeLongName?: Leg_.RouteLongName;
+    agencyId?: Leg_.AgencyId;
+    legGeometry?: Leg_.LegGeometry;
+  },
+  LegBrand
+>;
+export const Leg = t.brand(
+  t.partial({
+    signature: Common_.Signature,
+    from: Leg_.From,
+    to: Leg_.To,
+    startTime: Leg_.StartTime,
+    endTime: Leg_.EndTime,
+    mode: Leg_.Mode,
+    departureDelay: Leg_.DepartureDelay,
+    arrivalDelay: Leg_.ArrivalDelay,
+    distance: Leg_.Distance,
+    state: Leg_.State,
+    route: Leg_.Route,
+    routeShortName: Leg_.RouteShortName,
+    routeLongName: Leg_.RouteLongName,
+    agencyId: Leg_.AgencyId,
+    legGeometry: Leg_.LegGeometry,
+  }),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      signature?: Common_.Signature;
+      from?: Leg_.From;
+      to?: Leg_.To;
+      startTime?: Leg_.StartTime;
+      endTime?: Leg_.EndTime;
+      mode?: Leg_.Mode;
+      departureDelay?: Leg_.DepartureDelay;
+      arrivalDelay?: Leg_.ArrivalDelay;
+      distance?: Leg_.Distance;
+      state?: Leg_.State;
+      route?: Leg_.Route;
+      routeShortName?: Leg_.RouteShortName;
+      routeLongName?: Leg_.RouteLongName;
+      agencyId?: Leg_.AgencyId;
+      legGeometry?: Leg_.LegGeometry;
+    },
+    LegBrand
+  > => true,
+  'Leg',
+);
 export interface LegBrand {
-  readonly Leg: unique symbol
+  readonly Leg: unique symbol;
 }
 // Meta
 // TSP/mode-specific additional information. The TSP adapter should set MODE_{mode} with defined data, otherwise 'meta' can be used freely.
-export type Meta = t.Branded<{
-  MODE_WALK?: MODE_WALK_.Default,
-  MODE_BICYCLE?: MODE_BICYCLE_.Default,
-  MODE_CAR?: MODE_CAR_.Default,
-  MODE_TRAM?: MODE_TRAM_.Default,
-  MODE_SUBWAY?: MODE_SUBWAY_.Default,
-  MODE_RAIL?: MODE_RAIL_.Default,
-  MODE_BUS?: MODE_BUS_.Default,
-  MODE_FERRY?: MODE_FERRY_.Default,
-  MODE_CABLE_CAR?: MODE_CABLE_CAR_.Default,
-  MODE_GONDOLA?: MODE_GONDOLA_.Default,
-  MODE_FUNICULAR?: MODE_FUNICULAR_.Default,
-  MODE_SHARED_BICYCLE?: MODE_SHARED_BICYCLE_.Default,
-  MODE_SHARED_CAR?: MODE_SHARED_CAR_.Default,
-  MODE_TRANSIT?: MODE_TRANSIT_.Default,
-  MODE_TRAIN?: MODE_TRAIN_.Default,
-  MODE_TRAINISH?: MODE_TRAINISH_.Default,
-  MODE_BUSISH?: MODE_BUSISH_.Default,
-  MODE_TAXI?: MODE_TAXI_.Default,
-  MODE_SCOOTER?: MODE_SCOOTER_.Default
-}, MetaBrand>
-export const Meta = t.brand(t.partial({
-  MODE_WALK: MODE_WALK_.Default,
-  MODE_BICYCLE: MODE_BICYCLE_.Default,
-  MODE_CAR: MODE_CAR_.Default,
-  MODE_TRAM: MODE_TRAM_.Default,
-  MODE_SUBWAY: MODE_SUBWAY_.Default,
-  MODE_RAIL: MODE_RAIL_.Default,
-  MODE_BUS: MODE_BUS_.Default,
-  MODE_FERRY: MODE_FERRY_.Default,
-  MODE_CABLE_CAR: MODE_CABLE_CAR_.Default,
-  MODE_GONDOLA: MODE_GONDOLA_.Default,
-  MODE_FUNICULAR: MODE_FUNICULAR_.Default,
-  MODE_SHARED_BICYCLE: MODE_SHARED_BICYCLE_.Default,
-  MODE_SHARED_CAR: MODE_SHARED_CAR_.Default,
-  MODE_TRANSIT: MODE_TRANSIT_.Default,
-  MODE_TRAIN: MODE_TRAIN_.Default,
-  MODE_TRAINISH: MODE_TRAINISH_.Default,
-  MODE_BUSISH: MODE_BUSISH_.Default,
-  MODE_TAXI: MODE_TAXI_.Default,
-  MODE_SCOOTER: MODE_SCOOTER_.Default
-}), (x): x is t.Branded<{
-  MODE_WALK?: MODE_WALK_.Default,
-  MODE_BICYCLE?: MODE_BICYCLE_.Default,
-  MODE_CAR?: MODE_CAR_.Default,
-  MODE_TRAM?: MODE_TRAM_.Default,
-  MODE_SUBWAY?: MODE_SUBWAY_.Default,
-  MODE_RAIL?: MODE_RAIL_.Default,
-  MODE_BUS?: MODE_BUS_.Default,
-  MODE_FERRY?: MODE_FERRY_.Default,
-  MODE_CABLE_CAR?: MODE_CABLE_CAR_.Default,
-  MODE_GONDOLA?: MODE_GONDOLA_.Default,
-  MODE_FUNICULAR?: MODE_FUNICULAR_.Default,
-  MODE_SHARED_BICYCLE?: MODE_SHARED_BICYCLE_.Default,
-  MODE_SHARED_CAR?: MODE_SHARED_CAR_.Default,
-  MODE_TRANSIT?: MODE_TRANSIT_.Default,
-  MODE_TRAIN?: MODE_TRAIN_.Default,
-  MODE_TRAINISH?: MODE_TRAINISH_.Default,
-  MODE_BUSISH?: MODE_BUSISH_.Default,
-  MODE_TAXI?: MODE_TAXI_.Default,
-  MODE_SCOOTER?: MODE_SCOOTER_.Default
-}, MetaBrand> => true, 'Meta')
+export type Meta = t.Branded<
+  {
+    MODE_WALK?: MODE_WALK_.Default;
+    MODE_BICYCLE?: MODE_BICYCLE_.Default;
+    MODE_CAR?: MODE_CAR_.Default;
+    MODE_TRAM?: MODE_TRAM_.Default;
+    MODE_SUBWAY?: MODE_SUBWAY_.Default;
+    MODE_RAIL?: MODE_RAIL_.Default;
+    MODE_BUS?: MODE_BUS_.Default;
+    MODE_FERRY?: MODE_FERRY_.Default;
+    MODE_CABLE_CAR?: MODE_CABLE_CAR_.Default;
+    MODE_GONDOLA?: MODE_GONDOLA_.Default;
+    MODE_FUNICULAR?: MODE_FUNICULAR_.Default;
+    MODE_SHARED_BICYCLE?: MODE_SHARED_BICYCLE_.Default;
+    MODE_SHARED_CAR?: MODE_SHARED_CAR_.Default;
+    MODE_TRANSIT?: MODE_TRANSIT_.Default;
+    MODE_TRAIN?: MODE_TRAIN_.Default;
+    MODE_TRAINISH?: MODE_TRAINISH_.Default;
+    MODE_BUSISH?: MODE_BUSISH_.Default;
+    MODE_TAXI?: MODE_TAXI_.Default;
+    MODE_SCOOTER?: MODE_SCOOTER_.Default;
+  },
+  MetaBrand
+>;
+export const Meta = t.brand(
+  t.partial({
+    MODE_WALK: MODE_WALK_.Default,
+    MODE_BICYCLE: MODE_BICYCLE_.Default,
+    MODE_CAR: MODE_CAR_.Default,
+    MODE_TRAM: MODE_TRAM_.Default,
+    MODE_SUBWAY: MODE_SUBWAY_.Default,
+    MODE_RAIL: MODE_RAIL_.Default,
+    MODE_BUS: MODE_BUS_.Default,
+    MODE_FERRY: MODE_FERRY_.Default,
+    MODE_CABLE_CAR: MODE_CABLE_CAR_.Default,
+    MODE_GONDOLA: MODE_GONDOLA_.Default,
+    MODE_FUNICULAR: MODE_FUNICULAR_.Default,
+    MODE_SHARED_BICYCLE: MODE_SHARED_BICYCLE_.Default,
+    MODE_SHARED_CAR: MODE_SHARED_CAR_.Default,
+    MODE_TRANSIT: MODE_TRANSIT_.Default,
+    MODE_TRAIN: MODE_TRAIN_.Default,
+    MODE_TRAINISH: MODE_TRAINISH_.Default,
+    MODE_BUSISH: MODE_BUSISH_.Default,
+    MODE_TAXI: MODE_TAXI_.Default,
+    MODE_SCOOTER: MODE_SCOOTER_.Default,
+  }),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      MODE_WALK?: MODE_WALK_.Default;
+      MODE_BICYCLE?: MODE_BICYCLE_.Default;
+      MODE_CAR?: MODE_CAR_.Default;
+      MODE_TRAM?: MODE_TRAM_.Default;
+      MODE_SUBWAY?: MODE_SUBWAY_.Default;
+      MODE_RAIL?: MODE_RAIL_.Default;
+      MODE_BUS?: MODE_BUS_.Default;
+      MODE_FERRY?: MODE_FERRY_.Default;
+      MODE_CABLE_CAR?: MODE_CABLE_CAR_.Default;
+      MODE_GONDOLA?: MODE_GONDOLA_.Default;
+      MODE_FUNICULAR?: MODE_FUNICULAR_.Default;
+      MODE_SHARED_BICYCLE?: MODE_SHARED_BICYCLE_.Default;
+      MODE_SHARED_CAR?: MODE_SHARED_CAR_.Default;
+      MODE_TRANSIT?: MODE_TRANSIT_.Default;
+      MODE_TRAIN?: MODE_TRAIN_.Default;
+      MODE_TRAINISH?: MODE_TRAINISH_.Default;
+      MODE_BUSISH?: MODE_BUSISH_.Default;
+      MODE_TAXI?: MODE_TAXI_.Default;
+      MODE_SCOOTER?: MODE_SCOOTER_.Default;
+    },
+    MetaBrand
+  > => true,
+  'Meta',
+);
 export interface MetaBrand {
-  readonly Meta: unique symbol
+  readonly Meta: unique symbol;
 }
 // Terms
 // The purpose of this remains a mystery
-export type Terms = Terms_.Default
-export const Terms = Terms_.Default
+export type Terms = Terms_.Default;
+export const Terms = Terms_.Default;
 // Token
 // The validity token (such as booking ID, travel ticket etc.) that MaaS clients will display to validate the trip when starting the leg.
-export type Token = t.Branded<{
-  validityDuration?: {
-    startTime?: Units_.Time,
-    endTime?: Units_.Time
+export type Token = t.Branded<
+  {
+    validityDuration?: {
+      startTime?: Units_.Time;
+      endTime?: Units_.Time;
+    };
+    data?: {};
+    meta?: {};
   },
-  data?: {
-
-  },
-  meta?: {
-
-  }
-}, TokenBrand>
-export const Token = t.brand(t.partial({
-  validityDuration: t.partial({
-    startTime: Units_.Time,
-    endTime: Units_.Time
+  TokenBrand
+>;
+export const Token = t.brand(
+  t.partial({
+    validityDuration: t.partial({
+      startTime: Units_.Time,
+      endTime: Units_.Time,
+    }),
+    data: t.type({}),
+    meta: t.type({}),
   }),
-  data: t.type({
-
-  }),
-  meta: t.type({
-
-  })
-}), (x): x is t.Branded<{
-  validityDuration?: {
-    startTime?: Units_.Time,
-    endTime?: Units_.Time
-  },
-  data?: {
-
-  },
-  meta?: {
-
-  }
-}, TokenBrand> => true, 'Token')
+  (
+    x,
+  ): x is t.Branded<
+    {
+      validityDuration?: {
+        startTime?: Units_.Time;
+        endTime?: Units_.Time;
+      };
+      data?: {};
+      meta?: {};
+    },
+    TokenBrand
+  > => true,
+  'Token',
+);
 export interface TokenBrand {
-  readonly Token: unique symbol
+  readonly Token: unique symbol;
 }
 // Default
 // The purpose of this remains a mystery
-export type Default = t.Branded<{
-  id: Units_.Uuid,
-  tspId?: TspId,
-  state: State_.BookingState,
-  stateLog?: StateLog_.Default,
-  fares?: Array<Fare_.Default>,
-  cost?: Cost_.Default,
-  leg: Leg,
-  token: Token,
-  meta: Meta,
-  terms: Terms,
-  customer:
-    & Customer_.Default
-    & unknown,
-  product?: Product_.Default,
-  signature?: Common_.Signature,
-  configurator?: Configurator_.Default,
-  customerSelection?: CustomerSelection_.Default
-}, DefaultBrand>
-export const Default = t.brand(t.intersection([
-  t.type({
-    id: Units_.Uuid,
-    state: State_.BookingState,
-    leg: Leg,
-    token: Token,
-    meta: Meta,
-    terms: Terms,
-    customer: t.intersection([
-      Customer_.Default,
-      t.unknown
-    ])
-  }),
-  t.partial({
-    tspId: TspId,
-    stateLog: StateLog_.Default,
-    fares: t.array(Fare_.Default),
-    cost: Cost_.Default,
-    product: Product_.Default,
-    signature: Common_.Signature,
-    configurator: Configurator_.Default,
-    customerSelection: CustomerSelection_.Default
-  })
-]), (x): x is t.Branded<{
-  id: Units_.Uuid,
-  tspId?: TspId,
-  state: State_.BookingState,
-  stateLog?: StateLog_.Default,
-  fares?: Array<Fare_.Default>,
-  cost?: Cost_.Default,
-  leg: Leg,
-  token: Token,
-  meta: Meta,
-  terms: Terms,
-  customer:
-    & Customer_.Default
-    & unknown,
-  product?: Product_.Default,
-  signature?: Common_.Signature,
-  configurator?: Configurator_.Default,
-  customerSelection?: CustomerSelection_.Default
-}, DefaultBrand> => true, 'Default')
+export type Default = t.Branded<
+  {
+    id: Units_.Uuid;
+    tspId?: TspId;
+    state: State_.BookingState;
+    stateLog?: StateLog_.Default;
+    fares?: Array<Fare_.Default>;
+    cost?: Cost_.Default;
+    leg: Leg;
+    token: Token;
+    meta: Meta;
+    terms: Terms;
+    customer: Customer_.Default & unknown;
+    product?: Product_.Default;
+    signature?: Common_.Signature;
+    configurator?: Configurator_.Default;
+    customerSelection?: CustomerSelection_.Default;
+  },
+  DefaultBrand
+>;
+export const Default = t.brand(
+  t.intersection([
+    t.type({
+      id: Units_.Uuid,
+      state: State_.BookingState,
+      leg: Leg,
+      token: Token,
+      meta: Meta,
+      terms: Terms,
+      customer: t.intersection([Customer_.Default, t.unknown]),
+    }),
+    t.partial({
+      tspId: TspId,
+      stateLog: StateLog_.Default,
+      fares: t.array(Fare_.Default),
+      cost: Cost_.Default,
+      product: Product_.Default,
+      signature: Common_.Signature,
+      configurator: Configurator_.Default,
+      customerSelection: CustomerSelection_.Default,
+    }),
+  ]),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      id: Units_.Uuid;
+      tspId?: TspId;
+      state: State_.BookingState;
+      stateLog?: StateLog_.Default;
+      fares?: Array<Fare_.Default>;
+      cost?: Cost_.Default;
+      leg: Leg;
+      token: Token;
+      meta: Meta;
+      terms: Terms;
+      customer: Customer_.Default & unknown;
+      product?: Product_.Default;
+      signature?: Common_.Signature;
+      configurator?: Configurator_.Default;
+      customerSelection?: CustomerSelection_.Default;
+    },
+    DefaultBrand
+  > => true,
+  'Default',
+);
 export interface DefaultBrand {
-  readonly Default: unique symbol
+  readonly Default: unique symbol;
 }
 
 export default Default;

@@ -15,212 +15,236 @@ import * as Units_ from 'units.json';
 export const schemaId = 'http://maasglobal.com/core/components/terms.json';
 // Seat
 // Ticket's seat information for long distance trains, coaches or flights
-export type Seat = t.Branded<{
-  route?: string,
-  number?:
-    | string
-    | number,
-  coach?:
-    | string
-    | number
-}, SeatBrand>
-export const Seat = t.brand(t.partial({
-  route: t.string,
-  number: t.union([
-    t.string,
-    t.number
-  ]),
-  coach: t.union([
-    t.string,
-    t.number
-  ])
-}), (x): x is t.Branded<{
-  route?: string,
-  number?:
-    | string
-    | number,
-  coach?:
-    | string
-    | number
-}, SeatBrand> => true, 'Seat')
+export type Seat = t.Branded<
+  {
+    route?: string;
+    number?: string | number;
+    coach?: string | number;
+  },
+  SeatBrand
+>;
+export const Seat = t.brand(
+  t.partial({
+    route: t.string,
+    number: t.union([t.string, t.number]),
+    coach: t.union([t.string, t.number]),
+  }),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      route?: string;
+      number?: string | number;
+      coach?: string | number;
+    },
+    SeatBrand
+  > => true,
+  'Seat',
+);
 export interface SeatBrand {
-  readonly Seat: unique symbol
+  readonly Seat: unique symbol;
 }
 // Cancellation
 // The purpose of this remains a mystery
-export type Cancellation = t.Branded<{
-  cancellable: boolean,
-  cost?: Cost_.Default,
-  fare?: Fare_.Default,
-  refunded: boolean
-}, CancellationBrand>
-export const Cancellation = t.brand(t.intersection([
-  t.type({
-    cancellable: t.boolean,
-    refunded: t.boolean
-  }),
-  t.partial({
-    cost: Cost_.Default,
-    fare: Fare_.Default
-  })
-]), (x): x is t.Branded<{
-  cancellable: boolean,
-  cost?: Cost_.Default,
-  fare?: Fare_.Default,
-  refunded: boolean
-}, CancellationBrand> => true, 'Cancellation')
+export type Cancellation = t.Branded<
+  {
+    cancellable: boolean;
+    cost?: Cost_.Default;
+    fare?: Fare_.Default;
+    refunded: boolean;
+  },
+  CancellationBrand
+>;
+export const Cancellation = t.brand(
+  t.intersection([
+    t.type({
+      cancellable: t.boolean,
+      refunded: t.boolean,
+    }),
+    t.partial({
+      cost: Cost_.Default,
+      fare: Fare_.Default,
+    }),
+  ]),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      cancellable: boolean;
+      cost?: Cost_.Default;
+      fare?: Fare_.Default;
+      refunded: boolean;
+    },
+    CancellationBrand
+  > => true,
+  'Cancellation',
+);
 export interface CancellationBrand {
-  readonly Cancellation: unique symbol
+  readonly Cancellation: unique symbol;
 }
 // Amendment
 // The purpose of this remains a mystery
-export type Amendment = t.Branded<{
-  amendable: boolean,
-  cost?: Cost_.Default,
-  fare?: Fare_.Default
-}, AmendmentBrand>
-export const Amendment = t.brand(t.intersection([
-  t.type({
-    amendable: t.boolean
-  }),
-  t.partial({
-    cost: Cost_.Default,
-    fare: Fare_.Default
-  })
-]), (x): x is t.Branded<{
-  amendable: boolean,
-  cost?: Cost_.Default,
-  fare?: Fare_.Default
-}, AmendmentBrand> => true, 'Amendment')
+export type Amendment = t.Branded<
+  {
+    amendable: boolean;
+    cost?: Cost_.Default;
+    fare?: Fare_.Default;
+  },
+  AmendmentBrand
+>;
+export const Amendment = t.brand(
+  t.intersection([
+    t.type({
+      amendable: t.boolean,
+    }),
+    t.partial({
+      cost: Cost_.Default,
+      fare: Fare_.Default,
+    }),
+  ]),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      amendable: boolean;
+      cost?: Cost_.Default;
+      fare?: Fare_.Default;
+    },
+    AmendmentBrand
+  > => true,
+  'Amendment',
+);
 export interface AmendmentBrand {
-  readonly Amendment: unique symbol
+  readonly Amendment: unique symbol;
 }
 // Default
 // The purpose of this remains a mystery
-export type Default = t.Branded<{
-  type?: string,
-  seatings?: Array<Seat>,
-  validity?: {
-    startTime: Units_.Time,
-    endTime: Units_.Time,
-    startTimeReturn?: Units_.Time,
-    endTimeReturn?: Units_.Time
+export type Default = t.Branded<
+  {
+    type?: string;
+    seatings?: Array<Seat>;
+    validity?: {
+      startTime: Units_.Time;
+      endTime: Units_.Time;
+      startTimeReturn?: Units_.Time;
+      endTimeReturn?: Units_.Time;
+    };
+    reusable?: boolean;
+    reconcilable?: boolean;
+    restrictions?: {
+      singleDevice?: boolean;
+      skipRestrictionCheck?: boolean;
+      freeTicket?: {};
+    };
+    cancellation?: {
+      cancellationFormActionUrl?: Units_.Url;
+      outward?: Cancellation;
+      return?: Cancellation;
+    };
+    amendment?: {
+      outward?: Amendment;
+      return?: Amendment;
+    };
+    fareRates?: Array<{
+      amount: number;
+      currency: Units_.Currency;
+      timeInterval?: number;
+      startAt?: number;
+      type?: 'maxRate' | 'missedReturnPenalty' | 'extra';
+    }>;
   },
-  reusable?: boolean,
-  reconcilable?: boolean,
-  restrictions?: {
-    singleDevice?: boolean,
-    skipRestrictionCheck?: boolean,
-    freeTicket?: {
-
-    }
-  },
-  cancellation?: {
-    cancellationFormActionUrl?: Units_.Url,
-    outward?: Cancellation,
-    return?: Cancellation
-  },
-  amendment?: {
-    outward?: Amendment,
-    return?: Amendment
-  },
-  fareRates?: Array<{
-    amount: number,
-    currency: Units_.Currency,
-    timeInterval?: number,
-    startAt?: number,
-    type?:
-      | 'maxRate'
-      | 'missedReturnPenalty'
-      | 'extra'
-  }>
-}, DefaultBrand>
-export const Default = t.brand(t.partial({
-  type: t.string,
-  seatings: t.array(Seat),
-  validity: t.intersection([
-    t.type({
-      startTime: Units_.Time,
-      endTime: Units_.Time
+  DefaultBrand
+>;
+export const Default = t.brand(
+  t.partial({
+    type: t.string,
+    seatings: t.array(Seat),
+    validity: t.intersection([
+      t.type({
+        startTime: Units_.Time,
+        endTime: Units_.Time,
+      }),
+      t.partial({
+        startTimeReturn: Units_.Time,
+        endTimeReturn: Units_.Time,
+      }),
+    ]),
+    reusable: t.boolean,
+    reconcilable: t.boolean,
+    restrictions: t.partial({
+      singleDevice: t.boolean,
+      skipRestrictionCheck: t.boolean,
+      freeTicket: t.type({}),
     }),
-    t.partial({
-      startTimeReturn: Units_.Time,
-      endTimeReturn: Units_.Time
-    })
-  ]),
-  reusable: t.boolean,
-  reconcilable: t.boolean,
-  restrictions: t.partial({
-    singleDevice: t.boolean,
-    skipRestrictionCheck: t.boolean,
-    freeTicket: t.type({
-
-    })
-  }),
-  cancellation: t.partial({
-    cancellationFormActionUrl: Units_.Url,
-    outward: Cancellation,
-    return: Cancellation
-  }),
-  amendment: t.partial({
-    outward: Amendment,
-    return: Amendment
-  }),
-  fareRates: t.array(t.intersection([
-    t.type({
-      amount: t.number,
-      currency: Units_.Currency
+    cancellation: t.partial({
+      cancellationFormActionUrl: Units_.Url,
+      outward: Cancellation,
+      return: Cancellation,
     }),
-    t.partial({
-      timeInterval: t.number,
-      startAt: t.number,
-      type: t.union([
-        t.literal('maxRate'),
-        t.literal('missedReturnPenalty'),
-        t.literal('extra')
-      ])
-    })
-  ]))
-}), (x): x is t.Branded<{
-  type?: string,
-  seatings?: Array<Seat>,
-  validity?: {
-    startTime: Units_.Time,
-    endTime: Units_.Time,
-    startTimeReturn?: Units_.Time,
-    endTimeReturn?: Units_.Time
-  },
-  reusable?: boolean,
-  reconcilable?: boolean,
-  restrictions?: {
-    singleDevice?: boolean,
-    skipRestrictionCheck?: boolean,
-    freeTicket?: {
-
-    }
-  },
-  cancellation?: {
-    cancellationFormActionUrl?: Units_.Url,
-    outward?: Cancellation,
-    return?: Cancellation
-  },
-  amendment?: {
-    outward?: Amendment,
-    return?: Amendment
-  },
-  fareRates?: Array<{
-    amount: number,
-    currency: Units_.Currency,
-    timeInterval?: number,
-    startAt?: number,
-    type?:
-      | 'maxRate'
-      | 'missedReturnPenalty'
-      | 'extra'
-  }>
-}, DefaultBrand> => true, 'Default')
+    amendment: t.partial({
+      outward: Amendment,
+      return: Amendment,
+    }),
+    fareRates: t.array(
+      t.intersection([
+        t.type({
+          amount: t.number,
+          currency: Units_.Currency,
+        }),
+        t.partial({
+          timeInterval: t.number,
+          startAt: t.number,
+          type: t.union([
+            t.literal('maxRate'),
+            t.literal('missedReturnPenalty'),
+            t.literal('extra'),
+          ]),
+        }),
+      ]),
+    ),
+  }),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      type?: string;
+      seatings?: Array<Seat>;
+      validity?: {
+        startTime: Units_.Time;
+        endTime: Units_.Time;
+        startTimeReturn?: Units_.Time;
+        endTimeReturn?: Units_.Time;
+      };
+      reusable?: boolean;
+      reconcilable?: boolean;
+      restrictions?: {
+        singleDevice?: boolean;
+        skipRestrictionCheck?: boolean;
+        freeTicket?: {};
+      };
+      cancellation?: {
+        cancellationFormActionUrl?: Units_.Url;
+        outward?: Cancellation;
+        return?: Cancellation;
+      };
+      amendment?: {
+        outward?: Amendment;
+        return?: Amendment;
+      };
+      fareRates?: Array<{
+        amount: number;
+        currency: Units_.Currency;
+        timeInterval?: number;
+        startAt?: number;
+        type?: 'maxRate' | 'missedReturnPenalty' | 'extra';
+      }>;
+    },
+    DefaultBrand
+  > => true,
+  'Default',
+);
 export interface DefaultBrand {
-  readonly Default: unique symbol
+  readonly Default: unique symbol;
 }
 
 export default Default;

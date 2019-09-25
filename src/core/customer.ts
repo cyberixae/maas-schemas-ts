@@ -17,122 +17,118 @@ import * as Fare_ from 'src/core/components/fare';
 export const schemaId = 'http://maasglobal.com/core/customer.json';
 // Default
 // The purpose of this remains a mystery
-export type Default = t.Branded<{
-  identityId?: Units_.IdentityId,
-  firstName?: Common_.PersonalName,
-  lastName?: Common_.PersonalName,
-  phone?: Common_.Phone,
-  email?: Common_.Email,
-  address?: Address_.Address,
-  city?: Address_.City,
-  country?: Address_.Country,
-  zipCode?: Address_.ZipCode,
-  locale?: I18n_.Locale,
-  appInstanceId?: Common_.AppInstanceId,
-  opaqueId?: Common_.OpaqueId,
-  clientId?: Common_.ClientId,
-  dob?:
-    | boolean
-    | Units_.IsoDate,
-  ssid?:
-    | boolean
-    | Common_.Ssid,
-  balances?:
-    & {
-    WMP: {
-      currency: 'WMP',
-      amount: number
-    }
-  }
-    & Record<string, {
-    currency: 'TOKEN',
-    tokenId: Fare_.TokenId,
-    amount:
-      | number
-      | null
-  }>,
-  subscriberType?: string,
-  authToken?: Common_.EncodedQueryParam
-}, DefaultBrand>
-export const Default = t.brand(t.partial({
-  identityId: Units_.IdentityId,
-  firstName: Common_.PersonalName,
-  lastName: Common_.PersonalName,
-  phone: Common_.Phone,
-  email: Common_.Email,
-  address: Address_.Address,
-  city: Address_.City,
-  country: Address_.Country,
-  zipCode: Address_.ZipCode,
-  locale: I18n_.Locale,
-  appInstanceId: Common_.AppInstanceId,
-  opaqueId: Common_.OpaqueId,
-  clientId: Common_.ClientId,
-  dob: t.union([
-    t.boolean,
-    Units_.IsoDate
-  ]),
-  ssid: t.union([
-    t.boolean,
-    Common_.Ssid
-  ]),
-  balances: t.intersection([
-    t.type({
-      WMP: t.type({
-        currency: t.literal('WMP'),
-        amount: t.number
-      })
-    }),
-    t.record(t.string, t.type({
-      currency: t.literal('TOKEN'),
-      tokenId: Fare_.TokenId,
-      amount: t.union([
-        t.number,
-        t.null
-      ])
-    }))
-  ]),
-  subscriberType: t.string,
-  authToken: Common_.EncodedQueryParam
-}), (x): x is t.Branded<{
-  identityId?: Units_.IdentityId,
-  firstName?: Common_.PersonalName,
-  lastName?: Common_.PersonalName,
-  phone?: Common_.Phone,
-  email?: Common_.Email,
-  address?: Address_.Address,
-  city?: Address_.City,
-  country?: Address_.Country,
-  zipCode?: Address_.ZipCode,
-  locale?: I18n_.Locale,
-  appInstanceId?: Common_.AppInstanceId,
-  opaqueId?: Common_.OpaqueId,
-  clientId?: Common_.ClientId,
-  dob?:
-    | boolean
-    | Units_.IsoDate,
-  ssid?:
-    | boolean
-    | Common_.Ssid,
-  balances?:
-    & {
-    WMP: {
-      currency: 'WMP',
-      amount: number
-    }
-  }
-    & Record<string, {
-    currency: 'TOKEN',
-    tokenId: Fare_.TokenId,
-    amount:
-      | number
-      | null
-  }>,
-  subscriberType?: string,
-  authToken?: Common_.EncodedQueryParam
-}, DefaultBrand> => true, 'Default')
+export type Default = t.Branded<
+  {
+    identityId?: Units_.IdentityId;
+    firstName?: Common_.PersonalName;
+    lastName?: Common_.PersonalName;
+    phone?: Common_.Phone;
+    email?: Common_.Email;
+    address?: Address_.Address;
+    city?: Address_.City;
+    country?: Address_.Country;
+    zipCode?: Address_.ZipCode;
+    locale?: I18n_.Locale;
+    appInstanceId?: Common_.AppInstanceId;
+    opaqueId?: Common_.OpaqueId;
+    clientId?: Common_.ClientId;
+    dob?: boolean | Units_.IsoDate;
+    ssid?: boolean | Common_.Ssid;
+    balances?: {
+      WMP: {
+        currency: 'WMP';
+        amount: number;
+      };
+    } & Record<
+      string,
+      {
+        currency: 'TOKEN';
+        tokenId: Fare_.TokenId;
+        amount: number | null;
+      }
+    >;
+    subscriberType?: string;
+    authToken?: Common_.EncodedQueryParam;
+  },
+  DefaultBrand
+>;
+export const Default = t.brand(
+  t.partial({
+    identityId: Units_.IdentityId,
+    firstName: Common_.PersonalName,
+    lastName: Common_.PersonalName,
+    phone: Common_.Phone,
+    email: Common_.Email,
+    address: Address_.Address,
+    city: Address_.City,
+    country: Address_.Country,
+    zipCode: Address_.ZipCode,
+    locale: I18n_.Locale,
+    appInstanceId: Common_.AppInstanceId,
+    opaqueId: Common_.OpaqueId,
+    clientId: Common_.ClientId,
+    dob: t.union([t.boolean, Units_.IsoDate]),
+    ssid: t.union([t.boolean, Common_.Ssid]),
+    balances: t.intersection([
+      t.type({
+        WMP: t.type({
+          currency: t.literal('WMP'),
+          amount: t.number,
+        }),
+      }),
+      t.record(
+        t.string,
+        t.type({
+          currency: t.literal('TOKEN'),
+          tokenId: Fare_.TokenId,
+          amount: t.union([t.number, t.null]),
+        }),
+      ),
+    ]),
+    subscriberType: t.string,
+    authToken: Common_.EncodedQueryParam,
+  }),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      identityId?: Units_.IdentityId;
+      firstName?: Common_.PersonalName;
+      lastName?: Common_.PersonalName;
+      phone?: Common_.Phone;
+      email?: Common_.Email;
+      address?: Address_.Address;
+      city?: Address_.City;
+      country?: Address_.Country;
+      zipCode?: Address_.ZipCode;
+      locale?: I18n_.Locale;
+      appInstanceId?: Common_.AppInstanceId;
+      opaqueId?: Common_.OpaqueId;
+      clientId?: Common_.ClientId;
+      dob?: boolean | Units_.IsoDate;
+      ssid?: boolean | Common_.Ssid;
+      balances?: {
+        WMP: {
+          currency: 'WMP';
+          amount: number;
+        };
+      } & Record<
+        string,
+        {
+          currency: 'TOKEN';
+          tokenId: Fare_.TokenId;
+          amount: number | null;
+        }
+      >;
+      subscriberType?: string;
+      authToken?: Common_.EncodedQueryParam;
+    },
+    DefaultBrand
+  > => true,
+  'Default',
+);
 export interface DefaultBrand {
-  readonly Default: unique symbol
+  readonly Default: unique symbol;
 }
 
 export default Default;

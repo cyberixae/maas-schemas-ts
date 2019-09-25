@@ -14,164 +14,225 @@ import * as Station_ from 'station.json';
 export const schemaId = 'http://maasglobal.com/core/components/units-geo.json';
 // Latitude
 // Geographic latitude (north-south axis) in WGS-84 system, see https://en.wikipedia.org/wiki/World_Geodetic_System
-export type Latitude = t.Branded<number, LatitudeBrand>
-export const Latitude = t.brand(t.number, (x): x is t.Branded<number, LatitudeBrand> => ( typeof x !== 'number' || x >= -90 ) && ( typeof x !== 'number' || x <= 90 ), 'Latitude')
+export type Latitude = t.Branded<number, LatitudeBrand>;
+export const Latitude = t.brand(
+  t.number,
+  (x): x is t.Branded<number, LatitudeBrand> =>
+    (typeof x !== 'number' || x >= -90) && (typeof x !== 'number' || x <= 90),
+  'Latitude',
+);
 export interface LatitudeBrand {
-  readonly Latitude: unique symbol
+  readonly Latitude: unique symbol;
 }
 // Longitude
 // Geographic longitude (east-west axis) in WGS-84 system, see https://en.wikipedia.org/wiki/World_Geodetic_System
-export type Longitude = t.Branded<number, LongitudeBrand>
-export const Longitude = t.brand(t.number, (x): x is t.Branded<number, LongitudeBrand> => ( typeof x !== 'number' || x >= -180 ) && ( typeof x !== 'number' || x <= 180 ), 'Longitude')
+export type Longitude = t.Branded<number, LongitudeBrand>;
+export const Longitude = t.brand(
+  t.number,
+  (x): x is t.Branded<number, LongitudeBrand> =>
+    (typeof x !== 'number' || x >= -180) && (typeof x !== 'number' || x <= 180),
+  'Longitude',
+);
 export interface LongitudeBrand {
-  readonly Longitude: unique symbol
+  readonly Longitude: unique symbol;
 }
 // RelaxedLatitude
 // No-numeric precision version of MaaS core latitude
-export type RelaxedLatitude = t.Branded<number, RelaxedLatitudeBrand>
-export const RelaxedLatitude = t.brand(t.number, (x): x is t.Branded<number, RelaxedLatitudeBrand> => ( typeof x !== 'number' || x >= -90 ) && ( typeof x !== 'number' || x <= 90 ), 'RelaxedLatitude')
+export type RelaxedLatitude = t.Branded<number, RelaxedLatitudeBrand>;
+export const RelaxedLatitude = t.brand(
+  t.number,
+  (x): x is t.Branded<number, RelaxedLatitudeBrand> =>
+    (typeof x !== 'number' || x >= -90) && (typeof x !== 'number' || x <= 90),
+  'RelaxedLatitude',
+);
 export interface RelaxedLatitudeBrand {
-  readonly RelaxedLatitude: unique symbol
+  readonly RelaxedLatitude: unique symbol;
 }
 // RelaxedLongitude
 // No-numeric precision version of MaaS core longitude
-export type RelaxedLongitude = t.Branded<number, RelaxedLongitudeBrand>
-export const RelaxedLongitude = t.brand(t.number, (x): x is t.Branded<number, RelaxedLongitudeBrand> => ( typeof x !== 'number' || x >= -180 ) && ( typeof x !== 'number' || x <= 180 ), 'RelaxedLongitude')
+export type RelaxedLongitude = t.Branded<number, RelaxedLongitudeBrand>;
+export const RelaxedLongitude = t.brand(
+  t.number,
+  (x): x is t.Branded<number, RelaxedLongitudeBrand> =>
+    (typeof x !== 'number' || x >= -180) && (typeof x !== 'number' || x <= 180),
+  'RelaxedLongitude',
+);
 export interface RelaxedLongitudeBrand {
-  readonly RelaxedLongitude: unique symbol
+  readonly RelaxedLongitude: unique symbol;
 }
 // Distance
 // Distance in meters
-export type Distance = t.Branded<number, DistanceBrand>
-export const Distance = t.brand(t.number, (x): x is t.Branded<number, DistanceBrand> => ( typeof x !== 'number' || x <= 40075000 ) && ( typeof x !== 'number' || x % 1 === 0 ), 'Distance')
+export type Distance = t.Branded<number, DistanceBrand>;
+export const Distance = t.brand(
+  t.number,
+  (x): x is t.Branded<number, DistanceBrand> =>
+    (typeof x !== 'number' || x <= 40075000) && (typeof x !== 'number' || x % 1 === 0),
+  'Distance',
+);
 export interface DistanceBrand {
-  readonly Distance: unique symbol
+  readonly Distance: unique symbol;
 }
 // Polyline
 // Google encoded polyline, see: https://developers.google.com/maps/documentation/utilities/polylinealgorithm
-export type Polyline = t.Branded<string, PolylineBrand>
-export const Polyline = t.brand(t.string, (x): x is t.Branded<string, PolylineBrand> => ( typeof x !== 'string' || x.match("^([\\x5F-\\x7E]*[\\x3F-\\x5E])+$") !== null ) && ( typeof x !== 'string' || x.length >= 3 ) && ( typeof x !== 'string' || x.length <= 65535 ), 'Polyline')
+export type Polyline = t.Branded<string, PolylineBrand>;
+export const Polyline = t.brand(
+  t.string,
+  (x): x is t.Branded<string, PolylineBrand> =>
+    (typeof x !== 'string' || x.match('^([\\x5F-\\x7E]*[\\x3F-\\x5E])+$') !== null) &&
+    (typeof x !== 'string' || x.length >= 3) &&
+    (typeof x !== 'string' || x.length <= 65535),
+  'Polyline',
+);
 export interface PolylineBrand {
-  readonly Polyline: unique symbol
+  readonly Polyline: unique symbol;
 }
 // Location
 // Geographic latitude-longitude object in WGS-84 system, see https://en.wikipedia.org/wiki/World_Geodetic_System
-export type Location = t.Branded<{
-  lat: Latitude,
-  lon: Longitude
-}, LocationBrand>
-export const Location = t.brand(t.type({
-  lat: Latitude,
-  lon: Longitude
-}), (x): x is t.Branded<{
-  lat: Latitude,
-  lon: Longitude
-}, LocationBrand> => true, 'Location')
+export type Location = t.Branded<
+  {
+    lat: Latitude;
+    lon: Longitude;
+  },
+  LocationBrand
+>;
+export const Location = t.brand(
+  t.type({
+    lat: Latitude,
+    lon: Longitude,
+  }),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      lat: Latitude;
+      lon: Longitude;
+    },
+    LocationBrand
+  > => true,
+  'Location',
+);
 export interface LocationBrand {
-  readonly Location: unique symbol
+  readonly Location: unique symbol;
 }
 // RelaxedLocation
 // No-numeric precision version of MaaS core location
-export type RelaxedLocation = t.Branded<{
-  lat: RelaxedLatitude,
-  lon: RelaxedLongitude
-}, RelaxedLocationBrand>
-export const RelaxedLocation = t.brand(t.type({
-  lat: RelaxedLatitude,
-  lon: RelaxedLongitude
-}), (x): x is t.Branded<{
-  lat: RelaxedLatitude,
-  lon: RelaxedLongitude
-}, RelaxedLocationBrand> => true, 'RelaxedLocation')
+export type RelaxedLocation = t.Branded<
+  {
+    lat: RelaxedLatitude;
+    lon: RelaxedLongitude;
+  },
+  RelaxedLocationBrand
+>;
+export const RelaxedLocation = t.brand(
+  t.type({
+    lat: RelaxedLatitude,
+    lon: RelaxedLongitude,
+  }),
+  (
+    x,
+  ): x is t.Branded<
+    {
+      lat: RelaxedLatitude;
+      lon: RelaxedLongitude;
+    },
+    RelaxedLocationBrand
+  > => true,
+  'RelaxedLocation',
+);
 export interface RelaxedLocationBrand {
-  readonly RelaxedLocation: unique symbol
+  readonly RelaxedLocation: unique symbol;
 }
 // ShortLocation
 // Geographic latitude-longitude number-pair array in WGS-84 system, see https://en.wikipedia.org/wiki/World_Geodetic_System
-export type ShortLocation = t.Branded<[
-  Latitude,
-  Longitude
-], ShortLocationBrand>
-export const ShortLocation = t.brand(t.tuple([
-  Latitude,
-  Longitude
-]), (x): x is t.Branded<[
-  Latitude,
-  Longitude
-], ShortLocationBrand> => true, 'ShortLocation')
+export type ShortLocation = t.Branded<[Latitude, Longitude], ShortLocationBrand>;
+export const ShortLocation = t.brand(
+  t.tuple([Latitude, Longitude]),
+  (x): x is t.Branded<[Latitude, Longitude], ShortLocationBrand> => true,
+  'ShortLocation',
+);
 export interface ShortLocationBrand {
-  readonly ShortLocation: unique symbol
+  readonly ShortLocation: unique symbol;
 }
 // ShortLocationString
 // Geographic latitude-longitude number-pair as a string in WGS-84 system, see https://en.wikipedia.org/wiki/World_Geodetic_System
-export type ShortLocationString = t.Branded<string, ShortLocationStringBrand>
-export const ShortLocationString = t.brand(t.string, (x): x is t.Branded<string, ShortLocationStringBrand> => ( typeof x !== 'string' || x.match("^[+-]?\\d{1,3}(\\.\\d+)?,[+-]?\\d{1,3}(\\.\\d+)?$") !== null ) && ( typeof x !== 'string' || x.length >= 1 ) && ( typeof x !== 'string' || x.length <= 64 ), 'ShortLocationString')
+export type ShortLocationString = t.Branded<string, ShortLocationStringBrand>;
+export const ShortLocationString = t.brand(
+  t.string,
+  (x): x is t.Branded<string, ShortLocationStringBrand> =>
+    (typeof x !== 'string' ||
+      x.match('^[+-]?\\d{1,3}(\\.\\d+)?,[+-]?\\d{1,3}(\\.\\d+)?$') !== null) &&
+    (typeof x !== 'string' || x.length >= 1) &&
+    (typeof x !== 'string' || x.length <= 64),
+  'ShortLocationString',
+);
 export interface ShortLocationStringBrand {
-  readonly ShortLocationString: unique symbol
+  readonly ShortLocationString: unique symbol;
 }
 // Place
 // A place, as a location-name pair with name and address
 export type Place = t.Branded<
-  & {
-
-}
-  & 
-  & RelaxedLocation
-  & {
-  name?: Address_.PlaceName,
-  address?: Address_.ComponentAddress,
-  localeAddress?: string,
-  stopId?: string,
-  stopCode?: string,
-  stationId?: string,
-  facilities?: Array<string>,
-  openingHours?: Station_.OpeningHours,
-  zone?: Station_.Zone
-}, PlaceBrand>
-export const Place = t.brand(t.intersection([
-  t.type({
-
-  }),
+  {} & RelaxedLocation & {
+      name?: Address_.PlaceName;
+      address?: Address_.ComponentAddress;
+      localeAddress?: string;
+      stopId?: string;
+      stopCode?: string;
+      stationId?: string;
+      facilities?: Array<string>;
+      openingHours?: Station_.OpeningHours;
+      zone?: Station_.Zone;
+    },
+  PlaceBrand
+>;
+export const Place = t.brand(
   t.intersection([
-    RelaxedLocation,
-    t.partial({
-      name: Address_.PlaceName,
-      address: Address_.ComponentAddress,
-      localeAddress: t.string,
-      stopId: t.string,
-      stopCode: t.string,
-      stationId: t.string,
-      facilities: t.array(t.string),
-      openingHours: Station_.OpeningHours,
-      zone: Station_.Zone
-    })
-  ])
-]), (x): x is t.Branded<
-  & {
-
-}
-  & 
-  & RelaxedLocation
-  & {
-  name?: Address_.PlaceName,
-  address?: Address_.ComponentAddress,
-  localeAddress?: string,
-  stopId?: string,
-  stopCode?: string,
-  stationId?: string,
-  facilities?: Array<string>,
-  openingHours?: Station_.OpeningHours,
-  zone?: Station_.Zone
-}, PlaceBrand> => true, 'Place')
+    t.type({}),
+    t.intersection([
+      RelaxedLocation,
+      t.partial({
+        name: Address_.PlaceName,
+        address: Address_.ComponentAddress,
+        localeAddress: t.string,
+        stopId: t.string,
+        stopCode: t.string,
+        stationId: t.string,
+        facilities: t.array(t.string),
+        openingHours: Station_.OpeningHours,
+        zone: Station_.Zone,
+      }),
+    ]),
+  ]),
+  (
+    x,
+  ): x is t.Branded<
+    {} & RelaxedLocation & {
+        name?: Address_.PlaceName;
+        address?: Address_.ComponentAddress;
+        localeAddress?: string;
+        stopId?: string;
+        stopCode?: string;
+        stationId?: string;
+        facilities?: Array<string>;
+        openingHours?: Station_.OpeningHours;
+        zone?: Station_.Zone;
+      },
+    PlaceBrand
+  > => true,
+  'Place',
+);
 export interface PlaceBrand {
-  readonly Place: unique symbol
+  readonly Place: unique symbol;
 }
 // Default
 // The purpose of this remains a mystery
-export type Default = t.Branded<unknown, DefaultBrand>
-export const Default = t.brand(t.unknown, (x): x is t.Branded<unknown, DefaultBrand> => true, 'Default')
+export type Default = t.Branded<unknown, DefaultBrand>;
+export const Default = t.brand(
+  t.unknown,
+  (x): x is t.Branded<unknown, DefaultBrand> => true,
+  'Default',
+);
 export interface DefaultBrand {
-  readonly Default: unique symbol
+  readonly Default: unique symbol;
 }
 
 export default Default;
