@@ -13,10 +13,13 @@ const supportedEverywhere = [
   'definitions',
   'type',
   'properties',
+  'patternProperties',
   'required',
   'additionalProperties',
   'allOf',
   'anyOf',
+  'enum',
+  'const',
 ];
 const supportedAtRoot = [
   'minimum',
@@ -27,7 +30,6 @@ const supportedAtRoot = [
   'minItems',
   'maxItems',
   'pattern',
-  'enum',
 ];
 
 const [, , inputFile, outputDir, strict] = process.argv;
@@ -128,24 +130,62 @@ function getRequiredProperties(schema: JSONSchema7): { [key: string]: true } {
   return required;
 }
 
-function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
-  const properties = schema.properties || {};
-  const required = getRequiredProperties(schema);
-  const combinator = gen.interfaceCombinator(
-    Object.entries(properties).map(<K extends string, V>([key, value]: [K, V]) =>
-      gen.property(
-        key,
-        // eslint-disable-next-line
-        fromSchema(value),
-        !required.hasOwnProperty(key),
+function fromProperties(schema: JSONSchema7): [gen.TypeReference] | [] {
+  if ('properties' in schema && typeof schema.properties !== 'undefined') {
+    const required = getRequiredProperties(schema);
+    const combinator = gen.interfaceCombinator(
+      Object.entries(schema.properties).map(<K extends string, V>([key, value]: [K, V]) =>
+        gen.property(
+          key,
+          // eslint-disable-next-line
+          fromSchema(value),
+          !required.hasOwnProperty(key),
+        ),
       ),
-    ),
-  );
-  if (schema.hasOwnProperty('additionalProperties') === false) {
+    );
+    return [combinator];
+  }
+  return [];
+}
+
+function fromPatternProperties(schema: JSONSchema7): Array<gen.TypeReference> {
+  if ('patternProperties' in schema && typeof schema.patternProperties !== 'undefined') {
+    warning('patternProperty KEY validation NOT implemented');
+    const required = getRequiredProperties(schema);
+    const combinators = 
+    Object.entries(schema.patternProperties).map(<K extends string, V>([key, value]: [K, V]) =>
+      gen.recordCombinator(
+        gen.stringType,
+        fromSchema(value),
+      ),
+    );
+    return combinators;
+  }
+  return [];
+}
+
+function toInterfaceCombinator(schema: JSONSchema7): gen.TypeReference {
+
+  const combinators = [
+    ...fromProperties(schema),
+    ...fromPatternProperties(schema),
+  ];
+  const combinator = (() => {
+    if (combinators.length > 1) {
+      return gen.intersectionCombinator(combinators);
+    }
+    if (combinators.length === 1) {
+      const [combinator] = combinators;
+      return combinator;
+    }
+    return gen.interfaceCombinator([]);
+  })();
+
+  if (schema.hasOwnProperty('additionalproperties') === false) {
     return combinator;
   }
   if (typeof schema.additionalProperties !== 'boolean') {
-    const escalate = notImplemented('specific', 'additionalProperties', 'SCHEMA', true);
+    const escalate = notImplemented('specific', 'additionalProperties', 'schema', true);
     if (escalate !== null) {
       return escalate;
     }
@@ -193,17 +233,6 @@ function checkMaxItems(x: string, maxItems: number): string {
   return `( Array.isArray(x) === false || ${x}.length <= ${maxItems} )`;
 }
 
-function checkEnum(x: string, examples: Array<any>): string {
-  const options = examples.map((example) => {
-    // use our JSON.stringify to convert example into js code
-    const jsExample = JSON.stringify(example);
-
-    // use user's JSON.stringify to perform object comparison
-    return `JSON.stringify(${x}) === JSON.stringify(${jsExample})`;
-  });
-  return options.join(' || ');
-}
-
 function generateChecks(x: string, schema: JSONSchema7): string {
   const checks: Array<string> = [
     ...(schema.pattern ? [checkPattern(x, schema.pattern)] : []),
@@ -215,7 +244,6 @@ function generateChecks(x: string, schema: JSONSchema7): string {
     ...(schema.type === 'integer' ? [checkInteger(x)] : []),
     ...(schema.minItems ? [checkMinItems(x, schema.minItems)] : []),
     ...(schema.maxItems ? [checkMaxItems(x, schema.maxItems)] : []),
-    ...(schema.enum ? [checkEnum(x, schema.enum)] : []),
   ];
   if (checks.length < 1) {
     return 'true';
@@ -256,6 +284,24 @@ function isSupported(feature: string, isRoot: boolean) {
 }
 
 function fromType(schema: JSONSchema7): [gen.TypeReference] | [] {
+  if (Array.isArray(schema.type)) {
+    const combinators = schema.type.map((t) => {
+      // eslint-disable-next-line
+      switch (t) {
+        case 'string':
+          return gen.stringType;
+        case 'number':
+        case 'integer':
+          return gen.numberType;
+        case 'boolean':
+          return gen.booleanType;
+        case 'null':
+          return gen.nullType;
+      }
+      throw new Error(`${t}s are not supported as part of type MULTIPLES`);
+    });
+    return [gen.unionCombinator(combinators)];
+  }
   switch (schema.type) {
     case 'string':
       return [gen.stringType];
@@ -264,6 +310,8 @@ function fromType(schema: JSONSchema7): [gen.TypeReference] | [] {
       return [gen.numberType];
     case 'boolean':
       return [gen.booleanType];
+    case 'null':
+      return [gen.nullType];
     case 'object':
       return [toInterfaceCombinator(schema)];
     case 'array':
@@ -283,10 +331,29 @@ function fromType(schema: JSONSchema7): [gen.TypeReference] | [] {
 
 function fromEnum(schema: JSONSchema7): [gen.TypeReference] | [] {
   if ('enum' in schema && typeof schema.enum !== 'undefined') {
-    const escalate = notImplemented('standalone', 'enum', 'TYPE', true);
-    if (escalate !== null) {
-      return [escalate];
+    const combinators = schema.enum.map((s) => {
+      switch (typeof s) {
+        case 'string':
+        case 'boolean':
+        case 'number':
+          return gen.literalCombinator(s);
+      }
+      throw new Error(`${typeof s}s are not supported as part of ENUM`);
+    });
+    return [gen.unionCombinator(combinators)];
+  }
+  return [];
+}
+
+function fromConst(schema: JSONSchema7): [gen.TypeReference] | [] {
+  if ('const' in schema && typeof schema.const !== 'undefined') {
+    switch (typeof schema.const) {
+      case 'string':
+      case 'boolean':
+      case 'number':
+        return [gen.literalCombinator(schema.const)];
     }
+    throw new Error(`${typeof schema.const}s are not supported as part of CONST`);
   }
   return [];
 }
@@ -332,6 +399,7 @@ function fromSchema(schema: JSONSchema7Definition, isRoot = false): gen.TypeRefe
   const combinators = [
     ...fromType(schema),
     ...fromEnum(schema),
+    ...fromConst(schema),
     ...fromAllOf(schema),
     ...fromAnyOf(schema),
   ];
@@ -400,25 +468,21 @@ function fromNonRefRoot(
   // root schema info is printed in the beginning of the file
   const title = undefined;
   const description = undefined;
-  try {
-    return [
-      [
-        title,
-        description,
-        gen.typeDeclaration(
+  return [
+    [
+      title,
+      description,
+      gen.typeDeclaration(
+        'Default',
+        gen.brandCombinator(
+          fromSchema(schema, true),
+          (x) => generateChecks(x, schema),
           'Default',
-          gen.brandCombinator(
-            fromSchema(schema, true),
-            (x) => generateChecks(x, schema),
-            'Default',
-          ),
-          true,
         ),
-      ],
-    ];
-  } catch {
-    return [];
-  }
+        true,
+      ),
+    ],
+  ];
 }
 
 function fromRoot(
