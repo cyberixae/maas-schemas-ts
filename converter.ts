@@ -115,7 +115,20 @@ function parseRef(ref: string) {
   }
   const [filePath, jsonPath] = parts;
   // eslint-disable-next-line
-  const [name] = jsonPath.split('/').reverse();
+  const jsonPathParts = jsonPath.split('/');
+  if (jsonPathParts.length !== 3) {
+    // eslint-disable-next-line
+    throw new Error('unknown ref format');
+  }
+  const [empty, definitions, name] = jsonPathParts;
+  if (empty !== '') {
+    // eslint-disable-next-line
+    throw new Error('unknown ref format');
+  }
+  if (definitions !== 'definitions') {
+    // eslint-disable-next-line
+    throw new Error('unknown ref format');
+  }
   const variableName = camelFromKebab(name);
   return { filePath, variableName };
 }
@@ -477,8 +490,8 @@ function fromNonRefRoot(
   schema: JSONSchema7,
 ): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
   // root schema info is printed in the beginning of the file
-  const title = undefined;
-  const description = undefined;
+  const title = 'Default';
+  const description = 'The default export. More information at the top.';
   return [
     [
       title,
@@ -500,8 +513,8 @@ function fromRoot(
   root: JSONSchema7,
 ): Array<[JSONSchema7['title'], JSONSchema7['description'], gen.TypeDeclaration]> {
   // root schema info is printed in the beginning of the file
-  const title = undefined;
-  const description = undefined;
+  const title = 'Default';
+  const description = 'The default export. More information at the top.';
 
   if ('$ref' in root) {
     if (typeof root['$ref'] === 'undefined') {
