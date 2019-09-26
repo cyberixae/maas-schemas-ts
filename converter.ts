@@ -21,6 +21,8 @@ const supportedEverywhere = [
   'enum',
   'const',
   'items',
+  'default', // ignored
+  'examples', // ignored
 ];
 const supportedAtRoot = [
   'minimum',
