@@ -12,7 +12,6 @@ import * as Units_ from 'src/core/components/units';
 import * as Itinerary_ from 'src/core/itinerary';
 import * as ApiCommon_ from 'src/core/components/api-common';
 import * as Common_ from 'src/core/components/common';
-import * as ProductOption_ from 'src/core/product-option';
 import * as CustomerSelection_ from 'src/core/components/customerSelection';
 
 export const schemaId =
@@ -28,7 +27,6 @@ export type Default = t.Branded<
       paymentSourceId?: Common_.PaymentSourceId;
       itinerary: Itinerary_.Default;
       customerSelections: Array<{
-        ref?: ProductOption_.Ref;
         customerSelection?: CustomerSelection_.Default;
       }>;
     };
@@ -45,7 +43,6 @@ export const Default = t.brand(
         itinerary: Itinerary_.Default,
         customerSelections: t.array(
           t.partial({
-            ref: ProductOption_.Ref,
             customerSelection: CustomerSelection_.Default,
           }),
         ),
@@ -66,7 +63,6 @@ export const Default = t.brand(
         paymentSourceId?: Common_.PaymentSourceId;
         itinerary: Itinerary_.Default;
         customerSelections: Array<{
-          ref?: ProductOption_.Ref;
           customerSelection?: CustomerSelection_.Default;
         }>;
       };

@@ -22,7 +22,7 @@ export type Geometry = t.Branded<
 >;
 export const Geometry = t.brand(
   t.type({
-    type: t.union([t.literal('Point')]),
+    type: t.literal('Point'),
     coordinates: UnitsGeo_.ShortLocation,
   }),
   (
@@ -101,7 +101,7 @@ export type Feature = t.Branded<
 >;
 export const Feature = t.brand(
   t.type({
-    type: t.union([t.literal('Feature')]),
+    type: t.literal('Feature'),
     geometry: Geometry,
     properties: Properties,
   }),
@@ -131,7 +131,7 @@ export type FeatureCollection = t.Branded<
 >;
 export const FeatureCollection = t.brand(
   t.type({
-    type: t.union([t.literal('FeatureCollection')]),
+    type: t.literal('FeatureCollection'),
     features: t.array(Feature),
   }),
   (

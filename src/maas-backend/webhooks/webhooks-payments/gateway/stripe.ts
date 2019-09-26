@@ -66,7 +66,7 @@ export const Request = t.brand(
       }),
     }),
     params: t.type({
-      gatewayName: t.intersection([t.string, t.union([t.literal('stripe')])]),
+      gatewayName: t.intersection([t.string, t.literal('stripe')]),
     }),
   }),
   (

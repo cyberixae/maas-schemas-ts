@@ -9,7 +9,6 @@ Request schema for bookings-create
 
 import * as t from 'io-ts';
 import * as Units_ from 'src/core/components/units';
-import * as Response_ from 'src/maas-backend/bookings/bookings-agency-options/response';
 import * as CustomerSelection_ from 'src/core/components/customerSelection';
 import * as ApiCommon_ from 'src/core/components/api-common';
 
@@ -21,7 +20,6 @@ export type Default = t.Branded<
   {
     identityId: Units_.IdentityId;
     payload: {
-      booking?: Response_.Option;
       customerSelection?: CustomerSelection_.Default;
     };
     headers?: ApiCommon_.Headers;
@@ -33,7 +31,6 @@ export const Default = t.brand(
     t.type({
       identityId: Units_.IdentityId,
       payload: t.partial({
-        booking: Response_.Option,
         customerSelection: CustomerSelection_.Default,
       }),
     }),
@@ -47,7 +44,6 @@ export const Default = t.brand(
     {
       identityId: Units_.IdentityId;
       payload: {
-        booking?: Response_.Option;
         customerSelection?: CustomerSelection_.Default;
       };
       headers?: ApiCommon_.Headers;

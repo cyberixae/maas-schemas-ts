@@ -10,13 +10,10 @@ The base booking object with all fields, to be inherited
 import * as Units_ from './components/units';
 import * as t from 'io-ts';
 import * as Fare_ from './components/fare';
-import * as Cost_ from './components/cost';
-import * as Configurator_ from './components/configurator';
 import * as Leg_ from './leg';
 import * as Common_ from './components/common';
 import * as MODE_WALK_ from 'src/core/modes/MODE_WALK';
 import * as MODE_BICYCLE_ from 'src/core/modes/MODE_BICYCLE';
-import * as MODE_CAR_ from 'src/core/modes/MODE_CAR';
 import * as MODE_TRAM_ from 'src/core/modes/MODE_TRAM';
 import * as MODE_SUBWAY_ from 'src/core/modes/MODE_SUBWAY';
 import * as MODE_RAIL_ from 'src/core/modes/MODE_RAIL';
@@ -26,7 +23,6 @@ import * as MODE_CABLE_CAR_ from 'src/core/modes/MODE_CABLE_CAR';
 import * as MODE_GONDOLA_ from 'src/core/modes/MODE_GONDOLA';
 import * as MODE_FUNICULAR_ from 'src/core/modes/MODE_FUNICULAR';
 import * as MODE_SHARED_BICYCLE_ from 'src/core/modes/MODE_SHARED_BICYCLE';
-import * as MODE_SHARED_CAR_ from 'src/core/modes/MODE_SHARED_CAR';
 import * as MODE_TRANSIT_ from 'src/core/modes/MODE_TRANSIT';
 import * as MODE_TRAIN_ from 'src/core/modes/MODE_TRAIN';
 import * as MODE_TRAINISH_ from 'src/core/modes/MODE_TRAINISH';
@@ -56,14 +52,6 @@ export const Fares = t.brand(
 export interface FaresBrand {
   readonly Fares: unique symbol;
 }
-// Cost
-// The purpose of this remains a mystery
-export type Cost = Cost_.Default;
-export const Cost = Cost_.Default;
-// Configurator
-// The purpose of this remains a mystery
-export type Configurator = Configurator_.Default;
-export const Configurator = Configurator_.Default;
 // TspId
 // The purpose of this remains a mystery
 export type TspId = t.Branded<string, TspIdBrand>;
@@ -111,7 +99,6 @@ export type Meta = t.Branded<
   {
     MODE_WALK?: MODE_WALK_.Default;
     MODE_BICYCLE?: MODE_BICYCLE_.Default;
-    MODE_CAR?: MODE_CAR_.Default;
     MODE_TRAM?: MODE_TRAM_.Default;
     MODE_SUBWAY?: MODE_SUBWAY_.Default;
     MODE_RAIL?: MODE_RAIL_.Default;
@@ -121,7 +108,6 @@ export type Meta = t.Branded<
     MODE_GONDOLA?: MODE_GONDOLA_.Default;
     MODE_FUNICULAR?: MODE_FUNICULAR_.Default;
     MODE_SHARED_BICYCLE?: MODE_SHARED_BICYCLE_.Default;
-    MODE_SHARED_CAR?: MODE_SHARED_CAR_.Default;
     MODE_TRANSIT?: MODE_TRANSIT_.Default;
     MODE_TRAIN?: MODE_TRAIN_.Default;
     MODE_TRAINISH?: MODE_TRAINISH_.Default;
@@ -135,7 +121,6 @@ export const Meta = t.brand(
   t.partial({
     MODE_WALK: MODE_WALK_.Default,
     MODE_BICYCLE: MODE_BICYCLE_.Default,
-    MODE_CAR: MODE_CAR_.Default,
     MODE_TRAM: MODE_TRAM_.Default,
     MODE_SUBWAY: MODE_SUBWAY_.Default,
     MODE_RAIL: MODE_RAIL_.Default,
@@ -145,7 +130,6 @@ export const Meta = t.brand(
     MODE_GONDOLA: MODE_GONDOLA_.Default,
     MODE_FUNICULAR: MODE_FUNICULAR_.Default,
     MODE_SHARED_BICYCLE: MODE_SHARED_BICYCLE_.Default,
-    MODE_SHARED_CAR: MODE_SHARED_CAR_.Default,
     MODE_TRANSIT: MODE_TRANSIT_.Default,
     MODE_TRAIN: MODE_TRAIN_.Default,
     MODE_TRAINISH: MODE_TRAINISH_.Default,
@@ -159,7 +143,6 @@ export const Meta = t.brand(
     {
       MODE_WALK?: MODE_WALK_.Default;
       MODE_BICYCLE?: MODE_BICYCLE_.Default;
-      MODE_CAR?: MODE_CAR_.Default;
       MODE_TRAM?: MODE_TRAM_.Default;
       MODE_SUBWAY?: MODE_SUBWAY_.Default;
       MODE_RAIL?: MODE_RAIL_.Default;
@@ -169,7 +152,6 @@ export const Meta = t.brand(
       MODE_GONDOLA?: MODE_GONDOLA_.Default;
       MODE_FUNICULAR?: MODE_FUNICULAR_.Default;
       MODE_SHARED_BICYCLE?: MODE_SHARED_BICYCLE_.Default;
-      MODE_SHARED_CAR?: MODE_SHARED_CAR_.Default;
       MODE_TRANSIT?: MODE_TRANSIT_.Default;
       MODE_TRAIN?: MODE_TRAIN_.Default;
       MODE_TRAINISH?: MODE_TRAINISH_.Default;
@@ -237,7 +219,6 @@ export type Default = t.Branded<
     state: State_.BookingState;
     stateLog?: StateLog_.Default;
     fares?: Fares;
-    cost?: Cost;
     leg: Leg;
     token: Token;
     meta: Meta;
@@ -245,7 +226,6 @@ export type Default = t.Branded<
     customer: Customer_.Default & unknown;
     product?: Product_.Default;
     signature?: Common_.Signature;
-    configurator?: Configurator;
     customerSelection?: CustomerSelection_.Default;
   },
   DefaultBrand
@@ -265,10 +245,8 @@ export const Default = t.brand(
       tspId: TspId,
       stateLog: StateLog_.Default,
       fares: Fares,
-      cost: Cost,
       product: Product_.Default,
       signature: Common_.Signature,
-      configurator: Configurator,
       customerSelection: CustomerSelection_.Default,
     }),
   ]),
@@ -281,7 +259,6 @@ export const Default = t.brand(
       state: State_.BookingState;
       stateLog?: StateLog_.Default;
       fares?: Fares;
-      cost?: Cost;
       leg: Leg;
       token: Token;
       meta: Meta;
@@ -289,7 +266,6 @@ export const Default = t.brand(
       customer: Customer_.Default & unknown;
       product?: Product_.Default;
       signature?: Common_.Signature;
-      configurator?: Configurator;
       customerSelection?: CustomerSelection_.Default;
     },
     DefaultBrand

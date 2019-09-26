@@ -8,7 +8,6 @@ MaaS booking terms and condition for its business engine
 */
 
 import * as t from 'io-ts';
-import * as Cost_ from './cost';
 import * as Fare_ from './fare';
 import * as Units_ from './units';
 
@@ -49,7 +48,6 @@ export interface SeatBrand {
 export type Cancellation = t.Branded<
   {
     cancellable: boolean;
-    cost?: Cost_.Default;
     fare?: Fare_.Default;
     refunded: boolean;
   },
@@ -62,7 +60,6 @@ export const Cancellation = t.brand(
       refunded: t.boolean,
     }),
     t.partial({
-      cost: Cost_.Default,
       fare: Fare_.Default,
     }),
   ]),
@@ -71,7 +68,6 @@ export const Cancellation = t.brand(
   ): x is t.Branded<
     {
       cancellable: boolean;
-      cost?: Cost_.Default;
       fare?: Fare_.Default;
       refunded: boolean;
     },
@@ -87,7 +83,6 @@ export interface CancellationBrand {
 export type Amendment = t.Branded<
   {
     amendable: boolean;
-    cost?: Cost_.Default;
     fare?: Fare_.Default;
   },
   AmendmentBrand
@@ -98,7 +93,6 @@ export const Amendment = t.brand(
       amendable: t.boolean,
     }),
     t.partial({
-      cost: Cost_.Default,
       fare: Fare_.Default,
     }),
   ]),
@@ -107,7 +101,6 @@ export const Amendment = t.brand(
   ): x is t.Branded<
     {
       amendable: boolean;
-      cost?: Cost_.Default;
       fare?: Fare_.Default;
     },
     AmendmentBrand

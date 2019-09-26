@@ -13,7 +13,6 @@ import * as Common_ from './components/common';
 import * as State_ from './components/state';
 import * as Fare_ from './components/fare';
 import * as Leg_ from './leg';
-import * as ProductOption_ from './product-option';
 import * as Booking_ from 'src/core/booking';
 
 export const schemaId = 'http://maasglobal.com/core/itinerary.json';
@@ -36,7 +35,6 @@ export type Default = t.Branded<
     co2?: number;
     fares?: Array<Fare_.Default>;
     legs: Array<Leg_.Default>;
-    productOptions?: Array<ProductOption_.Default>;
     type?: 'outward' | 'return';
     bookings?: Array<Booking_.Default>;
   },
@@ -58,7 +56,6 @@ export const Default = t.brand(
       state: State_.ItineraryState,
       co2: t.number,
       fares: t.array(Fare_.Default),
-      productOptions: t.array(ProductOption_.Default),
       type: t.union([t.literal('outward'), t.literal('return')]),
       bookings: t.array(Booking_.Default),
     }),
@@ -78,7 +75,6 @@ export const Default = t.brand(
       co2?: number;
       fares?: Array<Fare_.Default>;
       legs: Array<Leg_.Default>;
-      productOptions?: Array<ProductOption_.Default>;
       type?: 'outward' | 'return';
       bookings?: Array<Booking_.Default>;
     },

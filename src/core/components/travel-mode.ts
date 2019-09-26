@@ -14,7 +14,7 @@ export const schemaId = 'http://maasglobal.com/core/components/travel-mode.json'
 // A mode that only involves waiting in the current location
 export type WaitingMode = t.Branded<string & ('WAIT'), WaitingModeBrand>;
 export const WaitingMode = t.brand(
-  t.intersection([t.string, t.union([t.literal('WAIT')])]),
+  t.intersection([t.string, t.literal('WAIT')]),
   (x): x is t.Branded<string & ('WAIT'), WaitingModeBrand> => true,
   'WaitingMode',
 );

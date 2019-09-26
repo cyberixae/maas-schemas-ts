@@ -14,7 +14,6 @@ import * as State_ from './components/state';
 import * as UnitsGeo_ from './components/units-geo';
 import * as TravelMode_ from './components/travel-mode';
 import * as Stop_ from './stop';
-import * as BookingOption_ from 'src/core/booking-option';
 
 export const schemaId = 'http://maasglobal.com/core/leg.json';
 // LegExtensions
@@ -69,7 +68,6 @@ export type PartialLegCore = t.Branded<
     legGeometry?: {
       points?: UnitsGeo_.Polyline;
     };
-    tspProduct?: BookingOption_.TspProduct;
     productOption?: number;
   },
   PartialLegCoreBrand
@@ -97,7 +95,6 @@ export const PartialLegCore = t.brand(
     legGeometry: t.partial({
       points: UnitsGeo_.Polyline,
     }),
-    tspProduct: BookingOption_.TspProduct,
     productOption: t.number,
   }),
   (
@@ -124,7 +121,6 @@ export const PartialLegCore = t.brand(
       legGeometry?: {
         points?: UnitsGeo_.Polyline;
       };
-      tspProduct?: BookingOption_.TspProduct;
       productOption?: number;
     },
     PartialLegCoreBrand

@@ -39,7 +39,7 @@ export const Default = t.brand(
     payload: t.type({
       paymentSource: t.intersection([
         t.partial({
-          isDefault: t.union([t.literal(true)]),
+          isDefault: t.literal(true),
           alias: PaymentSource_.Alias,
         }),
         t.union([t.unknown, t.unknown]),

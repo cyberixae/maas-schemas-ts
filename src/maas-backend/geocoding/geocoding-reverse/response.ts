@@ -29,7 +29,7 @@ export type Default = t.Branded<
 export const Default = t.brand(
   t.intersection([
     t.type({
-      type: t.union([t.literal('FeatureCollection')]),
+      type: t.literal('FeatureCollection'),
       features: t.array(
         t.intersection([
           Geolocation_.Feature,
