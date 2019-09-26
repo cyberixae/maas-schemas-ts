@@ -211,8 +211,13 @@ function toArrayCombinator(schema: JSONSchema7): gen.TypeReference {
     typeof schema.items !== 'boolean'
   ) {
     if (schema.items instanceof Array) {
-      const combinators = schema.items.map((s) => fromSchema(s));
-      return gen.tupleCombinator(combinators);
+      if ('additionalItems' in schema && schema.additionalItems === false) {
+        const combinators = schema.items.map((s) => fromSchema(s));
+        return gen.tupleCombinator(combinators);
+      }
+      throw new Error(
+        'tuples with ...REST are not supported, set additionalItems false',
+      );
     }
     return gen.arrayCombinator(fromSchema(schema.items));
   }
