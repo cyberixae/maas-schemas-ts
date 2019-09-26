@@ -31,9 +31,10 @@ const supportedAtRoot = [
   'multipleOf',
   'minLength',
   'maxLength',
+  'pattern',
   'minItems',
   'maxItems',
-  'pattern',
+  'uniqueItems',
 ];
 
 const [, , inputFile, outputDir, strict] = process.argv;
@@ -265,6 +266,10 @@ function checkMaxItems(x: string, maxItems: number): string {
   return `( Array.isArray(x) === false || ${x}.length <= ${maxItems} )`;
 }
 
+function checkUniqueItems(x: string): string {
+  return `( Array.isArray(x) === false || ${x}.length === [...new Set(x)].length )`;
+}
+
 function generateChecks(x: string, schema: JSONSchema7): string {
   const checks: Array<string> = [
     ...(schema.pattern ? [checkPattern(x, schema.pattern)] : []),
@@ -276,6 +281,7 @@ function generateChecks(x: string, schema: JSONSchema7): string {
     ...(schema.type === 'integer' ? [checkInteger(x)] : []),
     ...(schema.minItems ? [checkMinItems(x, schema.minItems)] : []),
     ...(schema.maxItems ? [checkMaxItems(x, schema.maxItems)] : []),
+    ...(schema.uniqueItems === true ? [checkUniqueItems(x)] : []),
   ];
   if (checks.length < 1) {
     return 'true';
