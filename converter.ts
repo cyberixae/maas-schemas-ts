@@ -217,9 +217,8 @@ function toArrayCombinator(schema: JSONSchema7): gen.TypeReference {
         const combinators = schema.items.map((s) => fromSchema(s));
         return gen.tupleCombinator(combinators);
       }
-      throw new Error(
-        'tuples with ...REST are not supported, set additionalItems false',
-      );
+      // eslint-disable-next-line
+      throw new Error('tuples with ...REST are not supported, set additionalItems false');
     }
     return gen.arrayCombinator(fromSchema(schema.items));
   }
@@ -307,8 +306,8 @@ function fromRef(refString: string): gen.TypeReference {
     const [fullPath] = withoutDomain.split('.json');
     imps.add(`import * as ${importName} from 'src/${fullPath}';`);
   } else {
-    const relativePath = ref.filePath;
-    imps.add(`import * as ${importName} from '${relativePath}';`);
+    const [relativePath] = ref.filePath.split('.json');
+    imps.add(`import * as ${importName} from './${relativePath}';`);
   }
   const variableRef = `${importName}.${ref.variableName}`;
   return gen.customCombinator(variableRef, variableRef, [importName]);
