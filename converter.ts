@@ -21,6 +21,7 @@ const supportedEverywhere = [
   'enum',
   'const',
   'items',
+  'additionalItems',
   'default', // ignored
   'examples', // ignored
 ];
